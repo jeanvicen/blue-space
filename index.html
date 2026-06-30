@@ -2,43 +2,55 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>BLUE SPACE</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/orbitron@5.0.0/index.css">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:#000;color:#fff;user-select:none;-webkit-tap-highlight-color:transparent}
-  #app{position:relative;width:100%;height:100%}
-  canvas{display:block}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:#000;color:#fff;user-select:none;-webkit-user-select:none;touch-action:none;overscroll-behavior:none}
+  #app{position:relative;width:100%;height:100%;width:100vw;height:100vh;height:100dvh}
+  canvas{display:block;touch-action:none}
 
   .hud{position:absolute;inset:0;pointer-events:none;color:#fff}
 
-  .title{position:absolute;top:24px;left:28px}
-  .title h1{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;letter-spacing:6px;color:#fff}
-  .title .sub{margin-top:4px;font-size:10px;letter-spacing:3px;color:#888;text-transform:uppercase}
-  .title .bar{margin-top:8px;width:50px;height:1px;background:linear-gradient(90deg,#fff,transparent)}
+  .title{position:absolute;top:clamp(12px,2vh,24px);left:clamp(12px,2vw,28px)}
+  .title h1{font-family:'Orbitron',sans-serif;font-size:clamp(14px,2.2vw,22px);font-weight:700;letter-spacing:clamp(3px,0.5vw,6px);color:#fff;transition:color .5s}
+  .title .sub{margin-top:2px;font-size:clamp(8px,1.2vw,10px);letter-spacing:clamp(1px,0.3vw,3px);color:#888;text-transform:uppercase;transition:color .5s}
+  .title .bar{margin-top:6px;width:clamp(30px,4vw,50px);height:1px;background:linear-gradient(90deg,#fff,transparent);transition:background .5s}
+
+  .level-indicator{
+    position:absolute;top:clamp(60px,8vh,80px);left:clamp(12px,2vw,28px);
+    font-family:'Orbitron',sans-serif;font-size:clamp(9px,1.2vw,11px);
+    letter-spacing:clamp(2px,0.4vw,4px);color:#888;
+    pointer-events:none;transition:all .5s;
+  }
+  .level-indicator .lvl-name{color:#fff;font-size:clamp(11px,1.5vw,14px);letter-spacing:clamp(3px,0.5vw,5px);margin-bottom:2px}
+  .level-indicator .lvl-num{color:#666;font-size:clamp(8px,1vw,9px);letter-spacing:2px}
 
   .panel{
-    position:absolute;top:24px;right:28px;
-    background:rgba(0,0,0,.75);backdrop-filter:blur(14px);
+    position:absolute;top:clamp(12px,2vh,24px);right:clamp(12px,2vw,28px);
+    background:rgba(0,0,0,.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
     border:1px solid rgba(255,255,255,.15);border-radius:2px;
-    padding:16px 20px;min-width:210px;pointer-events:auto;
+    padding:clamp(8px,1.2vh,16px) clamp(10px,1.5vw,20px);
+    min-width:clamp(140px,18vw,210px);pointer-events:auto;transition:border-color .5s;
   }
-  .panel h2{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:3px;color:#888;margin-bottom:12px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px}
-  .spec{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:11px}
+  .panel h2{font-family:'Orbitron',sans-serif;font-size:clamp(8px,1vw,10px);letter-spacing:clamp(2px,0.3vw,3px);color:#888;margin-bottom:clamp(6px,1vh,12px);text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:6px}
+  .spec{display:flex;justify-content:space-between;padding:clamp(2px,0.4vh,5px) 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:clamp(9px,1.1vw,11px)}
   .spec:last-child{border:none}
-  .spec .k{color:#777;letter-spacing:1px;font-size:10px}
-  .spec .v{color:#fff;font-weight:600;font-family:'Orbitron',sans-serif;font-size:11px}
-  .spec .v.score{color:#fff}
+  .spec .k{color:#777;letter-spacing:1px;font-size:clamp(8px,1vw,10px)}
+  .spec .v{color:#fff;font-weight:600;font-family:'Orbitron',sans-serif;font-size:clamp(9px,1.1vw,11px)}
   .spec .v.danger{color:#ff3333}
-  .spec .v.ammo{color:#fff}
-  .spec .v.kills{color:#fff}
-  .spec .v.coins{color:#fff}
+  .spec .v.boost-count{color:#fff;font-size:clamp(10px,1.3vw,13px);text-shadow:0 0 8px rgba(255,255,255,.4)}
+  .spec .v.dim-warn{color:#ff3333;animation:dimWarn 1s infinite}
+  @keyframes dimWarn{50%{opacity:.3}}
 
-  .bars{margin-top:10px}
-  .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-  .bar-row .lbl{font-size:9px;color:#777;letter-spacing:2px;font-family:'Orbitron',sans-serif;width:40px}
-  .bar-track{flex:1;height:4px;background:rgba(255,255,255,.08);position:relative;overflow:hidden}
+  .bars{margin-top:clamp(6px,1vh,10px)}
+  .bar-row{display:flex;align-items:center;gap:clamp(4px,0.6vw,8px);margin-bottom:clamp(3px,0.5vh,6px)}
+  .bar-row .lbl{font-size:clamp(7px,0.9vw,9px);color:#777;letter-spacing:2px;font-family:'Orbitron',sans-serif;width:clamp(28px,3.5vw,40px)}
+  .bar-track{flex:1;height:clamp(3px,0.5vh,4px);background:rgba(255,255,255,.08);position:relative;overflow:hidden}
   .bar-fill{height:100%;background:#fff;transition:width .15s}
   .bar-fill.speed{background:linear-gradient(90deg,#666,#fff)}
   .bar-fill.hull{background:#fff}
@@ -46,27 +58,24 @@
   .bar-fill.weapon{background:#fff}
   .bar-fill.weapon.reloading{background:#666;animation:reloadPulse .5s infinite}
   .bar-fill.boost{background:linear-gradient(90deg,#444,#888)}
+  .bar-fill.boost.dim{background:linear-gradient(90deg,#ff3333,#ff8844)}
   @keyframes reloadPulse{50%{opacity:.4}}
 
-  .corner{position:absolute;width:24px;height:24px;border:1px solid rgba(255,255,255,.3)}
-  .c-tl{top:10px;left:10px;border-right:none;border-bottom:none}
-  .c-tr{top:10px;right:10px;border-left:none;border-bottom:none}
-  .c-bl{bottom:10px;left:10px;border-right:none;border-top:none}
-  .c-br{bottom:10px;right:10px;border-left:none;border-top:none}
+  .corner{position:absolute;width:clamp(16px,2.5vw,24px);height:clamp(16px,2.5vw,24px);border:1px solid rgba(255,255,255,.3);transition:border-color .5s}
+  .c-tl{top:clamp(6px,1vh,10px);left:clamp(6px,1vw,10px);border-right:none;border-bottom:none}
+  .c-tr{top:clamp(6px,1vh,10px);right:clamp(6px,1vw,10px);border-left:none;border-bottom:none}
+  .c-bl{bottom:clamp(6px,1vh,10px);left:clamp(6px,1vw,10px);border-right:none;border-top:none}
+  .c-br{bottom:clamp(6px,1vh,10px);right:clamp(6px,1vw,10px);border-left:none;border-top:none}
 
   .crosshair{
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:100px;height:100px;pointer-events:none;opacity:.7;
+    width:clamp(60px,10vw,100px);height:clamp(60px,10vw,100px);pointer-events:none;opacity:.7;
     transition:transform .1s;
   }
-  .crosshair .ring{
-    position:absolute;inset:0;
-    border:1px solid rgba(255,255,255,.4);
-    border-radius:50%;
-  }
-  .crosshair .ring.inner{inset:20px;border-color:rgba(255,255,255,.25)}
-  .crosshair .dot{position:absolute;top:50%;left:50%;width:3px;height:3px;background:#fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 6px #fff}
-  .crosshair .tick{position:absolute;background:#fff}
+  .crosshair .ring{position:absolute;inset:0;border:1px solid rgba(255,255,255,.4);border-radius:50%;transition:border-color .5s,box-shadow .5s}
+  .crosshair .ring.inner{inset:20%;border-color:rgba(255,255,255,.25)}
+  .crosshair .dot{position:absolute;top:50%;left:50%;width:3px;height:3px;background:#fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 6px #fff;transition:background .5s,box-shadow .5s}
+  .crosshair .tick{position:absolute;background:#fff;transition:background .5s}
   .crosshair .t-t{top:0;left:50%;width:1px;height:8px;transform:translateX(-50%)}
   .crosshair .t-b{bottom:0;left:50%;width:1px;height:8px;transform:translateX(-50%)}
   .crosshair .t-l{left:0;top:50%;height:1px;width:8px;transform:translateY(-50%)}
@@ -74,169 +83,204 @@
   .crosshair.locked .ring{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,.5)}
   .crosshair.locked .dot{background:#fff;box-shadow:0 0 10px #fff}
 
-  /* OVERLAYS */
   .overlay{
     position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    background:rgba(0,0,0,.95);
-    backdrop-filter:blur(8px);z-index:10;pointer-events:auto;
-    animation:fadeIn .4s ease;
+    background:rgba(0,0,0,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    z-index:10;pointer-events:auto;animation:fadeIn .4s ease;overflow-y:auto;padding:20px;
   }
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   .overlay.hidden{display:none}
   .modal{
-    text-align:center;padding:50px 70px;
-    background:#000;
-    border:1px solid rgba(255,255,255,.2);
-    max-width:600px;width:90%;
-    position:relative;
+    text-align:center;padding:clamp(24px,4vh,50px) clamp(20px,4vw,70px);
+    background:#000;border:1px solid rgba(255,255,255,.2);
+    max-width:600px;width:100%;position:relative;margin:auto;
   }
-  .modal::before,.modal::after{
-    content:'';position:absolute;width:30px;height:30px;border:1px solid #fff;
-  }
+  .modal::before,.modal::after{content:'';position:absolute;width:clamp(18px,2.5vw,30px);height:clamp(18px,2.5vw,30px);border:1px solid #fff}
   .modal::before{top:-1px;left:-1px;border-right:none;border-bottom:none}
   .modal::after{bottom:-1px;right:-1px;border-left:none;border-top:none}
 
-  .logo{
-    font-family:'Orbitron',sans-serif;font-size:64px;font-weight:900;
-    letter-spacing:12px;color:#fff;margin-bottom:4px;
-    text-shadow:0 0 40px rgba(255,255,255,.3);
-    position:relative;
-  }
+  .logo{font-family:'Orbitron',sans-serif;font-size:clamp(32px,7vw,64px);font-weight:900;letter-spacing:clamp(4px,1.2vw,12px);color:#fff;margin-bottom:4px;text-shadow:0 0 40px rgba(255,255,255,.3);position:relative;line-height:1.1}
   .logo .blue{color:#fff}
   .logo .space{color:#888}
-  .tag{font-size:11px;letter-spacing:6px;color:#666;text-transform:uppercase;margin-bottom:40px}
-  .modal p{font-size:12px;color:#aaa;line-height:1.8;margin-bottom:24px;letter-spacing:.5px}
+  .tag{font-size:clamp(9px,1.2vw,11px);letter-spacing:clamp(3px,0.6vw,6px);color:#666;text-transform:uppercase;margin-bottom:clamp(16px,3vh,40px)}
+  .modal p{font-size:clamp(10px,1.3vw,12px);color:#aaa;line-height:1.8;margin-bottom:clamp(12px,2vh,24px);letter-spacing:.5px}
 
-  .menu-buttons{display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:20px}
+  .menu-buttons{display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);align-items:center;margin-top:clamp(12px,2vh,20px)}
   .btn{
-    display:block;width:260px;
-    background:transparent;
-    border:1px solid rgba(255,255,255,.3);color:#fff;
-    padding:14px 0;
-    font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:4px;
-    cursor:pointer;transition:all .2s;text-transform:uppercase;
-    position:relative;
+    display:block;width:clamp(180px,40vw,260px);
+    background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;
+    padding:clamp(10px,1.5vh,14px) 0;
+    font-family:'Orbitron',sans-serif;font-size:clamp(10px,1.3vw,12px);letter-spacing:clamp(2px,0.4vw,4px);
+    cursor:pointer;transition:all .2s;text-transform:uppercase;position:relative;
   }
-  .btn:hover{background:#fff;color:#000;border-color:#fff;letter-spacing:6px}
+  .btn:hover,.btn:active{background:#fff;color:#000;border-color:#fff;letter-spacing:clamp(3px,0.6vw,6px)}
   .btn.primary{background:#fff;color:#000;border-color:#fff}
-  .btn.primary:hover{background:transparent;color:#fff}
-  .btn.small{width:180px;padding:10px 0;font-size:10px}
+  .btn.primary:hover,.btn.primary:active{background:transparent;color:#fff}
+  .btn.small{width:clamp(140px,30vw,180px);padding:clamp(8px,1.2vh,10px) 0;font-size:clamp(9px,1.1vw,10px)}
 
-  .final-score{
-    font-family:'Orbitron',sans-serif;font-size:64px;color:#fff;
-    margin:14px 0;letter-spacing:6px;font-weight:900;
-  }
-  .final-label{font-size:10px;letter-spacing:4px;color:#666;text-transform:uppercase}
-  .best{font-size:11px;color:#888;letter-spacing:2px;margin-top:4px}
+  .final-score{font-family:'Orbitron',sans-serif;font-size:clamp(40px,8vw,64px);color:#fff;margin:14px 0;letter-spacing:clamp(3px,0.8vw,6px);font-weight:900}
+  .final-label{font-size:clamp(9px,1.1vw,10px);letter-spacing:clamp(2px,0.4vw,4px);color:#666;text-transform:uppercase}
+  .best{font-size:clamp(10px,1.2vw,11px);color:#888;letter-spacing:2px;margin-top:4px}
 
   .flash{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .08s;z-index:5}
   .flash.on{opacity:1;background:rgba(255,50,50,.25)}
   .flash.shoot{opacity:1;background:rgba(255,255,255,.08)}
+  .flash.dim{opacity:1;background:rgba(255,255,255,.6);transition:opacity 1.5s}
 
-  .damage-vignette{
-    position:absolute;inset:0;pointer-events:none;
-    box-shadow:inset 0 0 150px rgba(255,0,0,0);transition:box-shadow .3s;z-index:4;
-  }
+  .damage-vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 150px rgba(255,0,0,0);transition:box-shadow .3s;z-index:4}
   .damage-vignette.on{box-shadow:inset 0 0 200px rgba(255,0,0,.6)}
 
-  /* SETTINGS */
-  .settings-panel{text-align:left;padding:30px 40px;max-width:520px}
-  .settings-panel h2{font-family:'Orbitron',sans-serif;font-size:20px;letter-spacing:5px;color:#fff;margin-bottom:24px;text-align:center}
-  .setting-group{margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:14px}
+  .settings-panel{text-align:left;padding:clamp(20px,3vh,30px) clamp(20px,3vw,40px);max-width:520px}
+  .settings-panel h2{font-family:'Orbitron',sans-serif;font-size:clamp(16px,2.5vw,20px);letter-spacing:clamp(3px,0.5vw,5px);color:#fff;margin-bottom:clamp(14px,2vh,24px);text-align:center}
+  .setting-group{margin-bottom:clamp(12px,1.8vh,18px);border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:clamp(10px,1.5vh,14px)}
   .setting-group:last-of-type{border:none}
-  .setting-group label{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#888;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-family:'Orbitron',sans-serif}
+  .setting-group label{display:flex;justify-content:space-between;align-items:center;font-size:clamp(9px,1.1vw,10px);color:#888;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-family:'Orbitron',sans-serif}
   .setting-group label span.val{color:#fff;font-weight:600}
   .setting-group input[type="range"]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:rgba(255,255,255,.2);outline:none}
   .setting-group input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:#fff;cursor:pointer;border-radius:0}
   .setting-group input[type="range"]::-moz-range-thumb{width:14px;height:14px;background:#fff;cursor:pointer;border:none;border-radius:0}
   .setting-group select{width:100%;padding:10px;background:#000;color:#fff;border:1px solid rgba(255,255,255,.3);font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;cursor:pointer;outline:none}
   .setting-group select option{background:#000}
-  .settings-actions{display:flex;justify-content:center;gap:10px;margin-top:24px}
+  .settings-actions{display:flex;justify-content:center;gap:10px;margin-top:clamp(14px,2vh,24px);flex-wrap:wrap}
 
-  /* SHOP */
-  .shop-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:20px 0;max-width:500px}
-  .ship-card{
-    background:#000;border:1px solid rgba(255,255,255,.2);
-    padding:16px 12px;cursor:pointer;transition:all .2s;
-    position:relative;text-align:left;
-  }
-  .ship-card:hover{border-color:#fff;background:rgba(255,255,255,.03)}
+  .shop-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(8px,1.2vw,12px);margin:clamp(12px,2vh,20px) 0;max-width:500px}
+  .ship-card{background:#000;border:1px solid rgba(255,255,255,.2);padding:clamp(10px,1.5vw,16px) clamp(8px,1.2vw,12px);cursor:pointer;transition:all .2s;position:relative;text-align:left}
+  .ship-card:hover,.ship-card:active{border-color:#fff;background:rgba(255,255,255,.03)}
   .ship-card.selected{border-color:#fff;background:rgba(255,255,255,.08)}
   .ship-card.locked{opacity:.5}
-  .ship-card .name{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;color:#fff;margin-bottom:6px}
-  .ship-card .preview{height:60px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:8px}
+  .ship-card .name{font-family:'Orbitron',sans-serif;font-size:clamp(9px,1.1vw,11px);letter-spacing:2px;color:#fff;margin-bottom:6px}
+  .ship-card .preview{height:clamp(40px,7vh,60px);display:flex;align-items:center;justify-content:center;margin-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:8px}
   .ship-card .preview canvas{width:100%;height:100%}
-  .ship-card .stats{font-size:9px;color:#888;line-height:1.7;letter-spacing:1px}
+  .ship-card .stats{font-size:clamp(8px,1vw,9px);color:#888;line-height:1.7;letter-spacing:1px}
   .ship-card .stats span{color:#fff;font-family:'Orbitron',sans-serif}
   .ship-card .price{position:absolute;top:8px;right:10px;font-family:'Orbitron',sans-serif;font-size:10px;color:#fff;letter-spacing:1px}
   .ship-card .owned{position:absolute;top:8px;right:10px;font-size:9px;color:#888;letter-spacing:2px}
   .ship-card .equipped{position:absolute;bottom:8px;right:10px;font-size:8px;color:#fff;letter-spacing:2px;border:1px solid #fff;padding:2px 6px}
 
-  .coins-display{font-family:'Orbitron',sans-serif;font-size:14px;color:#fff;letter-spacing:3px;margin-bottom:16px}
-  .coins-display span{color:#fff}
+  .coins-display{font-family:'Orbitron',sans-serif;font-size:clamp(12px,1.6vw,14px);color:#fff;letter-spacing:3px;margin-bottom:16px}
 
-  /* WARNING */
-  .warning{
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    font-family:'Orbitron',sans-serif;font-size:14px;letter-spacing:6px;
-    color:#fff;text-shadow:0 0 20px rgba(255,255,255,.8);
-    pointer-events:none;opacity:0;transition:opacity .3s;z-index:3;
-  }
+  .warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Orbitron',sans-serif;font-size:clamp(11px,1.5vw,14px);letter-spacing:clamp(3px,0.6vw,6px);color:#fff;text-shadow:0 0 20px rgba(255,255,255,.8);pointer-events:none;opacity:0;transition:opacity .3s;z-index:3}
   .warning.on{opacity:1;animation:warnBlink .4s infinite}
   @keyframes warnBlink{50%{opacity:.3}}
 
-  .hint{position:absolute;bottom:20px;left:28px;font-size:10px;color:#666;letter-spacing:2px;pointer-events:none}
+  .dim-warning{
+    position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);
+    font-family:'Orbitron',sans-serif;font-size:clamp(20px,4vw,40px);
+    letter-spacing:clamp(5px,1vw,12px);color:#ff3333;
+    text-shadow:0 0 30px rgba(255,50,50,.8),0 0 60px rgba(255,50,50,.4);
+    pointer-events:none;opacity:0;z-index:8;text-align:center;
+    transition:opacity .5s;
+  }
+  .dim-warning.on{opacity:1;animation:dimFlash 2s ease-out forwards}
+  @keyframes dimFlash{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(0.5);letter-spacing:20px}
+    30%{opacity:1;transform:translate(-50%,-50%) scale(1.2);letter-spacing:15px}
+    70%{opacity:1;transform:translate(-50%,-50%) scale(1);letter-spacing:8px}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1);letter-spacing:8px}
+  }
+  .dim-warning .sub{font-size:clamp(10px,1.5vw,14px);letter-spacing:4px;margin-top:10px;color:#ff8844}
+
+  .level-announce{
+    position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);
+    font-family:'Orbitron',sans-serif;pointer-events:none;opacity:0;z-index:7;text-align:center;
+  }
+  .level-announce.on{animation:levelAnnounce 3s ease-out forwards}
+  @keyframes levelAnnounce{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(0.8)}
+    15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}
+    85%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.1)}
+  }
+  .level-announce .big{font-size:clamp(24px,5vw,48px);letter-spacing:clamp(4px,1vw,10px);color:#fff;text-shadow:0 0 30px rgba(255,255,255,.5);font-weight:900}
+  .level-announce .small{font-size:clamp(10px,1.3vw,13px);letter-spacing:clamp(3px,0.5vw,5px);color:#888;margin-top:8px}
+
+  .hint{position:absolute;bottom:clamp(10px,1.5vh,20px);left:clamp(12px,2vw,28px);font-size:clamp(8px,1vw,10px);color:#666;letter-spacing:2px;pointer-events:none}
   .hint span{color:#fff}
 
-  /* MOBILE CONTROLS */
   .mobile-controls{display:none;position:absolute;inset:0;pointer-events:none;z-index:6}
   .mobile-controls.active{display:block}
   .m-btn{
     position:absolute;pointer-events:auto;
-    width:60px;height:60px;
-    background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.3);
-    border-radius:50%;
+    width:clamp(50px,9vh,65px);height:clamp(50px,9vh,65px);
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);border-radius:50%;
     display:flex;align-items:center;justify-content:center;
-    font-family:'Orbitron',sans-serif;font-size:10px;color:#fff;letter-spacing:1px;
-    backdrop-filter:blur(4px);
-    transition:all .1s;
+    font-family:'Orbitron',sans-serif;font-size:clamp(9px,1.3vh,11px);color:#fff;letter-spacing:1px;
+    backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:all .1s;
   }
   .m-btn:active,.m-btn.pressed{background:rgba(255,255,255,.25);border-color:#fff}
-  .m-btn.fire{width:80px;height:80px;background:rgba(255,255,255,.15);border-color:#fff}
+  .m-btn.fire{width:clamp(70px,12vh,90px);height:clamp(70px,12vh,90px);background:rgba(255,255,255,.15);border-color:#fff;font-size:clamp(11px,1.6vh,13px)}
   .m-joystick{
-    position:absolute;left:30px;bottom:30px;
-    width:140px;height:140px;
-    background:rgba(255,255,255,.05);
-    border:1px solid rgba(255,255,255,.2);
-    border-radius:50%;pointer-events:auto;
+    position:absolute;left:clamp(15px,3vw,30px);bottom:clamp(15px,3vh,30px);
+    width:clamp(110px,18vh,150px);height:clamp(110px,18vh,150px);
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.2);border-radius:50%;pointer-events:auto;
   }
   .m-joystick .stick{
     position:absolute;top:50%;left:50%;
-    width:60px;height:60px;
-    background:rgba(255,255,255,.2);
-    border:1px solid rgba(255,255,255,.5);
-    border-radius:50%;
-    transform:translate(-50%,-50%);
-    transition:all .05s;
+    width:clamp(45px,7vh,65px);height:clamp(45px,7vh,65px);
+    background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);border-radius:50%;
+    transform:translate(-50%,-50%);transition:all .05s;
   }
 
-  .reload-indicator{
-    position:absolute;top:50%;left:50%;transform:translate(-50%,40px);
-    font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:3px;
-    color:#fff;opacity:0;transition:opacity .2s;pointer-events:none;z-index:3;
-  }
+  .reload-indicator{position:absolute;top:50%;left:50%;transform:translate(-50%,40px);font-family:'Orbitron',sans-serif;font-size:clamp(9px,1.2vw,10px);letter-spacing:3px;color:#fff;opacity:0;transition:opacity .2s;pointer-events:none;z-index:3}
   .reload-indicator.on{opacity:1;animation:reloadBlink .6s infinite}
   @keyframes reloadBlink{50%{opacity:.3}}
 
-  @media (max-width:768px){
-    .logo{font-size:40px;letter-spacing:6px}
-    .modal{padding:30px 20px}
-    .shop-grid{grid-template-columns:1fr}
-    .panel{min-width:160px;padding:12px 14px}
-    .title h1{font-size:16px}
-    .btn{width:220px}
+  .rotate-overlay{
+    display:none;position:absolute;inset:0;background:#000;z-index:100;
+    flex-direction:column;align-items:center;justify-content:center;color:#fff;
+    text-align:center;padding:40px;
   }
+  .rotate-overlay.active{display:flex}
+  .rotate-icon{
+    width:80px;height:80px;margin-bottom:30px;
+    border:2px solid #fff;border-radius:8px;position:relative;
+    animation:rotateAnim 2s infinite ease-in-out;
+  }
+  .rotate-icon::before{content:'';position:absolute;top:4px;left:4px;right:4px;bottom:4px;border:1px solid rgba(255,255,255,.4);border-radius:4px}
+  .rotate-icon::after{content:'';position:absolute;top:50%;right:-20px;width:14px;height:2px;background:#fff;transform:translateY(-50%);box-shadow:-8px -6px 0 -3px #fff,-8px 6px 0 -3px #fff}
+  @keyframes rotateAnim{
+    0%,100%{transform:rotate(0deg)}
+    25%{transform:rotate(90deg)}
+    50%{transform:rotate(90deg)}
+    75%{transform:rotate(0deg)}
+  }
+  .rotate-overlay h2{font-family:'Orbitron',sans-serif;font-size:18px;letter-spacing:4px;margin-bottom:12px}
+  .rotate-overlay p{font-size:12px;color:#888;letter-spacing:2px}
+
+  @media (max-width:900px),(hover:none) and (pointer:coarse){
+    .hint{display:none}
+    .panel{min-width:clamp(130px,30vw,170px)}
+    .spec{padding:2px 0}
+  }
+
+  @media (max-width:500px){
+    .shop-grid{grid-template-columns:1fr}
+    .modal{padding:20px 16px}
+  }
+
+  @media (max-height:400px) and (orientation:landscape){
+    .modal{padding:16px 20px}
+    .logo{font-size:32px;margin-bottom:2px}
+    .tag{margin-bottom:10px}
+    .menu-buttons{flex-direction:row;flex-wrap:wrap;justify-content:center}
+    .btn{width:auto;padding:8px 20px}
+  }
+
+  @media (orientation:portrait) and (hover:none) and (pointer:coarse){
+    .rotate-overlay.game-active{display:flex}
+  }
+
+  body.dim-mode .title h1{color:#ff3333}
+  body.dim-mode .title .sub{color:#ff6644}
+  body.dim-mode .title .bar{background:linear-gradient(90deg,#ff3333,transparent)}
+  body.dim-mode .corner{border-color:rgba(255,50,50,.4)}
+  body.dim-mode .panel{border-color:rgba(255,50,50,.3)}
+  body.dim-mode .crosshair .ring{border-color:rgba(255,50,50,.5)}
+  body.dim-mode .crosshair .dot{background:#ff3333;box-shadow:0 0 8px #ff3333}
+  body.dim-mode .crosshair .tick{background:#ff3333}
+  body.dim-mode .crosshair.locked .ring{border-color:#ff3333;box-shadow:0 0 10px rgba(255,50,50,.6)}
+  body.dim-mode .level-indicator .lvl-name{color:#ff3333}
+  body.dim-mode .bar-fill.boost{background:linear-gradient(90deg,#ff3333,#ff8844)}
 </style>
 </head>
 <body>
@@ -253,12 +297,18 @@
       <div class="bar"></div>
     </div>
 
+    <div class="level-indicator" id="levelInd">
+      <div class="lvl-name" id="lvlName">DEEP SPACE</div>
+      <div class="lvl-num" id="lvlNum">SECTOR 01</div>
+    </div>
+
     <div class="panel">
       <h2>Flight Data</h2>
       <div class="spec"><span class="k">Score</span><span class="v score" id="score">0</span></div>
       <div class="spec"><span class="k">Distance</span><span class="v" id="distance">0 km</span></div>
       <div class="spec"><span class="k">Kills</span><span class="v kills" id="kills">0</span></div>
-      <div class="spec"><span class="k">Coins</span><span class="v coins" id="coins">0</span></div>
+      <div class="spec"><span class="k">Credits</span><span class="v coins" id="coins">0</span></div>
+      <div class="spec"><span class="k">Boosts</span><span class="v boost-count" id="boostCount">0 / 1000</span></div>
       <div class="spec"><span class="k">Hull</span><span class="v" id="hull">100%</span></div>
       <div class="spec"><span class="k">Ammo</span><span class="v ammo" id="ammo">10 / 10</span></div>
       <div class="bars">
@@ -281,6 +331,14 @@
 
     <div class="reload-indicator" id="reloadInd">RELOADING</div>
     <div class="warning" id="warning">⚠ HOSTILES ⚠</div>
+    <div class="dim-warning" id="dimWarning">
+      DIMENSION SHIFT
+      <div class="sub">REALITY BREACH DETECTED</div>
+    </div>
+    <div class="level-announce" id="levelAnnounce">
+      <div class="big" id="levelAnnounceBig"></div>
+      <div class="small" id="levelAnnounceSmall"></div>
+    </div>
 
     <div class="hint">WASD / SETAS <span>•</span> SHIFT = BOOST <span>•</span> ESPAÇO = FIRE <span>•</span> R = RELOAD</div>
   </div>
@@ -288,20 +346,24 @@
   <div class="damage-vignette" id="dmgVig"></div>
   <div class="flash" id="flash"></div>
 
-  <!-- MOBILE CONTROLS -->
   <div class="mobile-controls" id="mobileControls">
     <div class="m-joystick" id="joystick"><div class="stick" id="stick"></div></div>
-    <div class="m-btn fire" id="mFire" style="right:30px;bottom:50px">FIRE</div>
-    <div class="m-btn" id="mBoost" style="right:130px;bottom:60px">BOOST</div>
-    <div class="m-btn" id="mReload" style="right:130px;bottom:140px">R</div>
+    <div class="m-btn fire" id="mFire" style="right:clamp(15px,3vw,30px);bottom:clamp(30px,5vh,50px)">FIRE</div>
+    <div class="m-btn" id="mBoost" style="right:clamp(100px,18vw,140px);bottom:clamp(40px,6vh,65px)">BOOST</div>
+    <div class="m-btn" id="mReload" style="right:clamp(100px,18vw,140px);bottom:clamp(120px,20vh,145px)">R</div>
   </div>
 
-  <!-- MAIN MENU -->
+  <div class="rotate-overlay" id="rotateOverlay">
+    <div class="rotate-icon"></div>
+    <h2>GIRE O DISPOSITIVO</h2>
+    <p>Para uma melhor experiência, jogue em modo paisagem</p>
+  </div>
+
   <div class="overlay" id="menuOverlay">
     <div class="modal">
       <div class="logo"><span class="blue">BLUE</span><span class="space">SPACE</span></div>
       <div class="tag">Deep Space Combat Simulator</div>
-      <p>Navegue pelo espaço profundo, desvie de meteoros e destrua naves inimigas. Colete moedas, desbloqueie novas naves e torne-se uma lenda.</p>
+      <p>Navegue pelo espaço profundo, desvie de meteoros, explore planetas gigantes e destrua naves inimigas. Use o boost 1000 vezes para acessar a dimensão alternativa.</p>
       <div class="coins-display">CREDITS: <span id="menuCoins">0</span></div>
       <div class="menu-buttons">
         <button class="btn primary" id="btnStart">INICIAR MISSÃO</button>
@@ -311,10 +373,9 @@
     </div>
   </div>
 
-  <!-- SHOP -->
   <div class="overlay hidden" id="shopOverlay">
     <div class="modal" style="max-width:640px">
-      <h2 style="font-family:'Orbitron',sans-serif;font-size:22px;letter-spacing:5px;margin-bottom:6px">HANGAR</h2>
+      <h2 style="font-family:'Orbitron',sans-serif;font-size:clamp(16px,2.5vw,22px);letter-spacing:5px;margin-bottom:6px">HANGAR</h2>
       <div class="tag">Selecione sua nave</div>
       <div class="coins-display">CREDITS: <span id="shopCoins">0</span></div>
       <div class="shop-grid" id="shopGrid"></div>
@@ -324,7 +385,6 @@
     </div>
   </div>
 
-  <!-- SETTINGS -->
   <div class="overlay hidden" id="settingsOverlay">
     <div class="modal settings-panel">
       <h2>CONFIGURAÇÕES</h2>
@@ -333,8 +393,8 @@
         <input type="range" id="sensSlider" min="0.5" max="2" step="0.1" value="1">
       </div>
       <div class="setting-group">
-        <label>Campo de Visão <span class="val" id="fovVal">70</span></label>
-        <input type="range" id="fovSlider" min="50" max="100" step="5" value="70">
+        <label>Campo de Visão <span class="val" id="fovVal">75</span></label>
+        <input type="range" id="fovSlider" min="50" max="110" step="5" value="75">
       </div>
       <div class="setting-group">
         <label>Qualidade</label>
@@ -360,10 +420,9 @@
     </div>
   </div>
 
-  <!-- GAME OVER -->
   <div class="overlay hidden" id="gameOverOverlay">
     <div class="modal">
-      <h1 style="font-family:'Orbitron',sans-serif;font-size:36px;letter-spacing:6px;color:#fff;margin-bottom:8px">MISSÃO ENCERRADA</h1>
+      <h1 style="font-family:'Orbitron',sans-serif;font-size:clamp(22px,4vw,36px);letter-spacing:clamp(3px,0.8vw,6px);color:#fff;margin-bottom:8px">MISSÃO ENCERRADA</h1>
       <div class="tag">Hull Integrity Lost</div>
       <div class="final-label">Pontuação</div>
       <div class="final-score" id="finalScore">0</div>
@@ -389,6 +448,26 @@
 import * as THREE from 'three';
 
 // ================================================================
+// DEVICE DETECTION
+// ================================================================
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+const isMobile = isTouchDevice && (innerWidth < 1000 || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+const isPortrait = () => innerHeight > innerWidth;
+const isLowEnd = isMobile || navigator.hardwareConcurrency <= 4;
+
+const PERF = {
+  stars: isLowEnd ? 800 : 2000,
+  meteorDetail: isLowEnd ? 0 : 1,
+  planetDetail: isLowEnd ? 48 : 96,
+  ringDetail: isLowEnd ? 48 : 128,
+  pixelRatio: isLowEnd ? Math.min(devicePixelRatio, 1.5) : Math.min(devicePixelRatio, 2),
+  trailRate: isLowEnd ? 0.08 : 0.03,
+  maxBullets: isLowEnd ? 30 : 80,
+  maxExplosionParts: isLowEnd ? 8 : 20,
+  nebulaParticles: isLowEnd ? 800 : 2500,
+};
+
+// ================================================================
 // PERSISTENT DATA
 // ================================================================
 const SHIPS = [
@@ -404,7 +483,7 @@ const save = {
   best: 0,
   currentShip: 'mk1',
   ownedShips: ['mk1'],
-  settings: {sensitivity:1, fov:70, quality:'medium', difficulty:'normal'}
+  settings: {sensitivity:1, fov:75, quality:'medium', difficulty:'normal'}
 };
 try {
   const s = JSON.parse(localStorage.getItem('bluespace_save') || 'null');
@@ -414,21 +493,40 @@ function saveData(){ localStorage.setItem('bluespace_save', JSON.stringify(save)
 function getShip(){ return SHIPS.find(s=>s.id===save.currentShip) || SHIPS[0]; }
 
 // ================================================================
+// LEVELS — CENÁRIOS COM PLANETAS GIGANTES
+// ================================================================
+const LEVELS = [
+  { name:'DEEP SPACE', sector:'01', distance:0, bg:0x000000, fog:0x000000, fogFar:800, planets:[] },
+  { name:'GAS GIANT ZONE', sector:'02', distance:500, bg:0x02020a, fog:0x02020a, fogFar:900, planets:['gasGiant','moon1','moon2'] },
+  { name:'SOLAR REGION', sector:'03', distance:1200, bg:0x0a0603, fog:0x0a0603, fogFar:1000, planets:['sun','rocky1','rocky2'] },
+  { name:'RINGED WORLD', sector:'04', distance:2000, bg:0x050308, fog:0x050308, fogFar:1000, planets:['ringed','moon3','asteroidField'] },
+  { name:'THE VOID', sector:'05', distance:2800, bg:0x020005, fog:0x020005, fogFar:1000, planets:['blackHole','rocky3'] },
+  { name:'NEBULA CORE', sector:'06', distance:3800, bg:0x080208, fog:0x080208, fogFar:1200, planets:['nebula','gasGiant2'] },
+  { name:'DIMENSION X', sector:'??', distance:Infinity, bg:0x1a0505, fog:0x1a0505, fogFar:1000, planets:['dimPlanet','dimSun','dimRinged'], dim:true },
+];
+
+// ================================================================
 // THREE.JS SETUP
 // ================================================================
 const app = document.getElementById('app');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
-scene.fog = new THREE.Fog(0x000000, 40, 180);
+scene.fog = new THREE.FogExp2(0x000000, 0.0008);
 
-const camera = new THREE.PerspectiveCamera(save.settings.fov, innerWidth/innerHeight, 0.1, 400);
+const camera = new THREE.PerspectiveCamera(save.settings.fov, innerWidth/innerHeight, 0.1, 3000);
 camera.position.set(0, 3, 8);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.setSize(innerWidth,innerHeight);
+const renderer = new THREE.WebGLRenderer({
+  antialias: !isLowEnd,
+  powerPreference: isLowEnd ? 'low-power' : 'high-performance',
+  alpha: false,
+  stencil: false,
+  depth: true
+});
+renderer.setPixelRatio(PERF.pixelRatio);
+renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+renderer.toneMappingExposure = 1.2;
 app.insertBefore(renderer.domElement, app.firstChild);
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x222222, 0.6));
@@ -438,40 +536,689 @@ scene.add(key);
 const rim = new THREE.DirectionalLight(0xaaaaaa, 0.8);
 rim.position.set(-8, 3, -5);
 scene.add(rim);
-const fill = new THREE.PointLight(0xffffff, 0.8, 30);
-fill.position.set(0, 0, 5);
-scene.add(fill);
 
-// Stars
+// Stars — 3 layers
 function makeStars(count, radius, size, color){
   const geo = new THREE.BufferGeometry();
-  const pos = [];
+  const pos = new Float32Array(count * 3);
   for(let i=0;i<count;i++){
     const r = radius*(0.6+Math.random()*0.4);
     const th = Math.random()*Math.PI*2;
     const ph = Math.acos(2*Math.random()-1);
-    pos.push(r*Math.sin(ph)*Math.cos(th), r*Math.cos(ph), r*Math.sin(ph)*Math.sin(th));
+    const i3 = i*3;
+    pos[i3] = r*Math.sin(ph)*Math.cos(th);
+    pos[i3+1] = r*Math.cos(ph);
+    pos[i3+2] = r*Math.sin(ph)*Math.sin(th);
   }
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
-  return new THREE.Points(geo, new THREE.PointsMaterial({color, size, transparent:true, opacity:0.9}));
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  return new THREE.Points(geo, new THREE.PointsMaterial({color, size, transparent:true, opacity:0.9, sizeAttenuation:false}));
 }
-const stars1 = makeStars(1500, 200, 0.3, 0xffffff);
-const stars2 = makeStars(800, 150, 0.5, 0xcccccc);
-const stars3 = makeStars(400, 120, 0.8, 0x888888);
+const stars1 = makeStars(PERF.stars, 1200, 1.5, 0xffffff);
+const stars2 = makeStars(Math.floor(PERF.stars/2), 900, 2.2, 0xcccccc);
+const stars3 = makeStars(Math.floor(PERF.stars/3), 600, 3, 0x8888ff);
 scene.add(stars1, stars2, stars3);
+
+// ================================================================
+// SHADERS
+// ================================================================
+const planetVert = `
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vPos;
+  void main() {
+    vUv = uv;
+    vNormal = normalize(normalMatrix * normal);
+    vPos = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const gasPlanetFrag = `
+  uniform float time;
+  uniform vec3 color1;
+  uniform vec3 color2;
+  uniform vec3 color3;
+  uniform vec3 color4;
+  uniform float stormIntensity;
+  varying vec2 vUv;
+  varying vec3 vNormal;
+
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float noise(vec2 p) {
+    vec2 i = floor(p); vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash(i); float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0)); float d = hash(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+  float fbm(vec2 p) {
+    float v = 0.0; float a = 0.5;
+    for(int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
+    return v;
+  }
+
+  void main() {
+    float bands1 = sin(vUv.y * 60.0 + time * 0.04) * 0.5 + 0.5;
+    float bands2 = sin(vUv.y * 25.0 - time * 0.025 + vUv.x * 2.0) * 0.5 + 0.5;
+    float bands3 = sin(vUv.y * 100.0 + time * 0.06) * 0.5 + 0.5;
+    float turb = fbm(vUv * vec2(12.0, 30.0) + vec2(time * 0.015, 0.0));
+    float turb2 = fbm(vUv * vec2(25.0, 60.0) + vec2(-time * 0.02, time * 0.01));
+    vec2 stormCenter = vec2(0.3 + sin(time * 0.05) * 0.05, 0.55);
+    float stormDist = distance(vUv, stormCenter);
+    float storm = smoothstep(0.15, 0.0, stormDist);
+    float stormSpiral = sin(atan(vUv.y - stormCenter.y, vUv.x - stormCenter.x) * 5.0 + stormDist * 30.0 - time * 0.3) * 0.5 + 0.5;
+    storm *= stormSpiral;
+    float pattern = mix(bands1, bands2, 0.5);
+    pattern = mix(pattern, turb, 0.35);
+    pattern = mix(pattern, bands3 * 0.3, 0.2);
+    pattern += turb2 * 0.2;
+    pattern = mix(pattern, 0.8 + storm * 0.3, storm * stormIntensity);
+    vec3 color = mix(color1, color2, pattern);
+    color = mix(color, color3, turb * 0.4);
+    color = mix(color, color4, bands3 * 0.2);
+    color = mix(color, color4 * 1.3, storm * 0.6);
+    vec3 lightDir = normalize(vec3(0.8, 0.4, 0.6));
+    float diff = max(0.0, dot(vNormal, lightDir));
+    float terminator = smoothstep(-0.1, 0.2, dot(vNormal, lightDir));
+    color *= mix(0.3, 1.0, terminator) * 0.9 + 0.15;
+    float rim = 1.0 - max(0.0, dot(vNormal, vec3(0.0, 0.0, 1.0)));
+    color += color3 * pow(rim, 4.0) * 0.3;
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+const rockyPlanetFrag = `
+  uniform float time;
+  uniform vec3 color1;
+  uniform vec3 color2;
+  uniform vec3 color3;
+  varying vec2 vUv;
+  varying vec3 vNormal;
+
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float noise(vec2 p) {
+    vec2 i = floor(p); vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash(i); float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0)); float d = hash(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+  float fbm(vec2 p) {
+    float v = 0.0; float a = 0.5;
+    for(int i = 0; i < 6; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
+    return v;
+  }
+
+  void main() {
+    float n1 = fbm(vUv * 20.0);
+    float n2 = fbm(vUv * 50.0 + 10.0);
+    float n3 = noise(vUv * 100.0);
+    float craters = 0.0;
+    for(int i = 0; i < 8; i++) {
+      vec2 cp = vec2(hash(vec2(float(i), 0.0)), hash(vec2(0.0, float(i))));
+      float cd = distance(vUv, cp);
+      float size = 0.05 + hash(vec2(float(i), float(i))) * 0.08;
+      float crater = smoothstep(size, size * 0.7, cd) - smoothstep(size * 0.7, size * 0.5, cd) * 0.5;
+      craters += crater;
+    }
+    craters = clamp(craters, 0.0, 1.0);
+    float mountains = smoothstep(0.5, 0.8, n1);
+    vec3 color = mix(color1, color2, n1);
+    color = mix(color, color3, n2 * 0.3);
+    color *= (0.7 + craters * 0.4);
+    color = mix(color, color3 * 0.6, mountains * 0.3);
+    color += n3 * 0.05;
+    vec3 lightDir = normalize(vec3(0.8, 0.4, 0.6));
+    float terminator = smoothstep(-0.1, 0.2, dot(vNormal, lightDir));
+    color *= mix(0.2, 1.0, terminator) * 0.9 + 0.1;
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+const atmosphereVert = `
+  varying vec3 vNormal;
+  varying vec3 vViewDir;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+    vViewDir = normalize(-mvPos.xyz);
+    gl_Position = projectionMatrix * mvPos;
+  }
+`;
+
+const atmosphereFrag = `
+  uniform vec3 glowColor;
+  uniform float intensity;
+  uniform float power;
+  varying vec3 vNormal;
+  varying vec3 vViewDir;
+  void main() {
+    float glow = pow(1.0 - max(0.0, dot(vNormal, vViewDir)), power);
+    gl_FragColor = vec4(glowColor, glow * intensity);
+  }
+`;
+
+const sunFrag = `
+  uniform float time;
+  varying vec2 vUv;
+  varying vec3 vNormal;
+
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float noise(vec2 p) {
+    vec2 i = floor(p); vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash(i); float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0)); float d = hash(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+  float fbm(vec2 p) {
+    float v = 0.0; float a = 0.5;
+    for(int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
+    return v;
+  }
+
+  void main() {
+    float n1 = fbm(vUv * 12.0 + time * 0.2);
+    float n2 = fbm(vUv * 25.0 - time * 0.15);
+    float n3 = noise(vUv * 50.0 + time * 0.3);
+    float n4 = fbm(vUv * 6.0 + time * 0.08);
+    float flare = pow(n3, 3.0) * 2.0;
+    float pattern = n1 * 0.4 + n2 * 0.3 + n4 * 0.3 + flare * 0.2;
+    vec3 hot = vec3(1.0, 1.0, 0.95);
+    vec3 warm = vec3(1.0, 0.75, 0.35);
+    vec3 cool = vec3(0.9, 0.35, 0.1);
+    vec3 dark = vec3(0.5, 0.15, 0.05);
+    vec3 color = mix(dark, cool, pattern);
+    color = mix(color, warm, smoothstep(0.3, 0.6, pattern));
+    color = mix(color, hot, smoothstep(0.6, 0.9, pattern));
+    color += hot * flare * 0.5;
+    float limb = max(0.0, dot(vNormal, vec3(0.0, 0.0, 1.0)));
+    color *= 0.6 + limb * 0.6;
+    gl_FragColor = vec4(color * 1.8, 1.0);
+  }
+`;
+
+const blackHoleFrag = `
+  uniform float time;
+  varying vec2 vUv;
+
+  void main() {
+    vec2 center = vec2(0.5);
+    float dist = distance(vUv, center);
+    float angle = atan(vUv.y - 0.5, vUv.x - 0.5);
+    float disk = 0.0;
+    for(int i = 0; i < 3; i++) {
+      float fi = float(i);
+      float arm = sin(angle * (4.0 + fi) + time * (1.5 + fi * 0.3) + dist * (15.0 + fi * 5.0));
+      arm = pow(max(0.0, arm), 3.0);
+      disk += arm;
+    }
+    disk /= 3.0;
+    float ring = smoothstep(0.5, 0.25, dist) * smoothstep(0.08, 0.18, dist);
+    disk *= ring;
+    float innerGlow = smoothstep(0.25, 0.15, dist) * smoothstep(0.08, 0.12, dist);
+    vec3 coldColor = vec3(0.3, 0.1, 0.6);
+    vec3 warmColor = vec3(0.9, 0.4, 0.2);
+    vec3 hotColor = vec3(1.0, 0.9, 0.7);
+    vec3 diskColor = mix(coldColor, warmColor, disk);
+    diskColor = mix(diskColor, hotColor, innerGlow);
+    float lens = smoothstep(0.2, 0.12, dist) * smoothstep(0.05, 0.1, dist);
+    diskColor += vec3(0.5, 0.3, 0.8) * lens * 0.5;
+    float black = smoothstep(0.12, 0.05, dist);
+    vec3 color = diskColor * (1.0 - black);
+    float alpha = (1.0 - black) * 0.95 + disk * 0.3;
+    gl_FragColor = vec4(color, alpha);
+  }
+`;
+
+const ringFrag = `
+  uniform float time;
+  uniform vec3 color1;
+  uniform vec3 color2;
+  varying vec2 vUv;
+
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+  void main() {
+    vec2 centered = vUv - 0.5;
+    float dist = length(centered) * 2.0;
+    float bands = sin(dist * 80.0) * 0.5 + 0.5;
+    float bands2 = sin(dist * 200.0 + 1.5) * 0.5 + 0.5;
+    float bands3 = sin(dist * 40.0) * 0.5 + 0.5;
+    float gap1 = smoothstep(0.58, 0.60, dist) * smoothstep(0.63, 0.61, dist);
+    float gap2 = smoothstep(0.75, 0.76, dist) * smoothstep(0.78, 0.77, dist);
+    float gaps = 1.0 - (gap1 + gap2) * 0.8;
+    float density = mix(bands, bands2, 0.5);
+    density = mix(density, bands3, 0.3);
+    density *= gaps;
+    float falloff = smoothstep(1.0, 0.5, dist) * smoothstep(0.3, 0.4, dist);
+    density *= falloff;
+    vec3 color = mix(color1, color2, density);
+    float sparkle = hash(floor(vUv * 500.0)) * 0.3;
+    color += sparkle * density;
+    gl_FragColor = vec4(color, density * 0.85);
+  }
+`;
+
+// ================================================================
+// PLANET FACTORY — GIGANTIC PLANETS
+// ================================================================
+const planets = [];
+
+function createPlanet(type, dimMode=false){
+  const group = new THREE.Group();
+  const detail = PERF.planetDetail;
+
+  if(type === 'gasGiant'){
+    const size = 120; // MASSIVE
+    const colors = dimMode 
+      ? [new THREE.Color(0x882222), new THREE.Color(0x441111), new THREE.Color(0xaa4444), new THREE.Color(0xff6644)]
+      : [new THREE.Color(0x8b7355), new THREE.Color(0x5a4a3a), new THREE.Color(0xc9a876), new THREE.Color(0xd4a574)];
+    
+    const geo = new THREE.SphereGeometry(size, detail, detail);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0}, color1:{value:colors[0]}, color2:{value:colors[1]}, color3:{value:colors[2]}, color4:{value:colors[3]}, stormIntensity:{value:1.0} },
+      vertexShader: planetVert, fragmentShader: gasPlanetFrag
+    });
+    group.add(new THREE.Mesh(geo, mat));
+
+    const atmGeo = new THREE.SphereGeometry(size * 1.06, 48, 48);
+    const atmMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:dimMode ? new THREE.Color(0xff4422) : new THREE.Color(0x88aaff)}, intensity:{value:1.2}, power:{value:3.5} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(atmGeo, atmMat));
+
+    const hazeGeo = new THREE.SphereGeometry(size * 1.15, 32, 32);
+    const hazeMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:dimMode ? new THREE.Color(0xff2200) : new THREE.Color(0x4466aa)}, intensity:{value:0.5}, power:{value:5.0} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(hazeGeo, hazeMat));
+    group.userData.materials = [mat, atmMat, hazeMat];
+    group.userData.size = size;
+    group.userData.type = 'gasGiant';
+  }
+  else if(type === 'gasGiant2'){
+    const size = 100;
+    const colors = dimMode
+      ? [new THREE.Color(0x662244), new THREE.Color(0x331122), new THREE.Color(0x884466), new THREE.Color(0xaa5588)]
+      : [new THREE.Color(0x3a5a8a), new THREE.Color(0x1a2a4a), new THREE.Color(0x5a8abb), new THREE.Color(0x88bbee)];
+    
+    const geo = new THREE.SphereGeometry(size, detail, detail);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0}, color1:{value:colors[0]}, color2:{value:colors[1]}, color3:{value:colors[2]}, color4:{value:colors[3]}, stormIntensity:{value:0.7} },
+      vertexShader: planetVert, fragmentShader: gasPlanetFrag
+    });
+    group.add(new THREE.Mesh(geo, mat));
+
+    const atmGeo = new THREE.SphereGeometry(size * 1.07, 48, 48);
+    const atmMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:dimMode ? new THREE.Color(0xff3366) : new THREE.Color(0x66aaff)}, intensity:{value:1.0}, power:{value:3.5} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(atmGeo, atmMat));
+    group.userData.materials = [mat, atmMat];
+    group.userData.size = size;
+    group.userData.type = 'gasGiant2';
+  }
+  else if(type === 'rocky1' || type === 'rocky2' || type === 'rocky3'){
+    const size = type === 'rocky1' ? 30 : (type === 'rocky2' ? 20 : 40);
+    const colors = dimMode
+      ? [new THREE.Color(0x661111), new THREE.Color(0x331111), new THREE.Color(0x882222)]
+      : type === 'rocky1'
+        ? [new THREE.Color(0x8a6a4a), new THREE.Color(0x4a3a2a), new THREE.Color(0xaa8866)]
+        : type === 'rocky2'
+          ? [new THREE.Color(0x6a5a4a), new THREE.Color(0x3a2a1a), new THREE.Color(0x8a7a6a)]
+          : [new THREE.Color(0x5a4a3a), new THREE.Color(0x2a1a0a), new THREE.Color(0x7a6a5a)];
+    
+    const geo = new THREE.SphereGeometry(size, detail, detail);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0}, color1:{value:colors[0]}, color2:{value:colors[1]}, color3:{value:colors[2]} },
+      vertexShader: planetVert, fragmentShader: rockyPlanetFrag
+    });
+    group.add(new THREE.Mesh(geo, mat));
+
+    if(size > 15){
+      const atmGeo = new THREE.SphereGeometry(size * 1.04, 32, 32);
+      const atmMat = new THREE.ShaderMaterial({
+        uniforms: { glowColor:{value:dimMode ? new THREE.Color(0xff4422) : new THREE.Color(0xaa8866)}, intensity:{value:0.5}, power:{value:4.0} },
+        vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+        transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+      });
+      group.add(new THREE.Mesh(atmGeo, atmMat));
+      group.userData.materials = [mat, atmMat];
+    } else {
+      group.userData.materials = [mat];
+    }
+    group.userData.size = size;
+    group.userData.type = 'rocky';
+  }
+  else if(type === 'ringed'){
+    const size = 110; // HUGE
+    const colors = dimMode
+      ? [new THREE.Color(0x884422), new THREE.Color(0x442211), new THREE.Color(0xaa6633), new THREE.Color(0xcc8844)]
+      : [new THREE.Color(0xc9a876), new THREE.Color(0x8a7355), new THREE.Color(0xe8c896), new THREE.Color(0xd4a574)];
+    
+    const geo = new THREE.SphereGeometry(size, detail, detail);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0}, color1:{value:colors[0]}, color2:{value:colors[1]}, color3:{value:colors[2]}, color4:{value:colors[3]}, stormIntensity:{value:0.5} },
+      vertexShader: planetVert, fragmentShader: gasPlanetFrag
+    });
+    group.add(new THREE.Mesh(geo, mat));
+
+    const atmGeo = new THREE.SphereGeometry(size * 1.05, 48, 48);
+    const atmMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:dimMode ? new THREE.Color(0xff5533) : new THREE.Color(0xddbb88)}, intensity:{value:0.9}, power:{value:3.5} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(atmGeo, atmMat));
+
+    const ringGeo = new THREE.RingGeometry(size * 1.3, size * 2.5, PERF.ringDetail, 8);
+    const ringMat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0}, color1:{value:dimMode ? new THREE.Color(0x884422) : new THREE.Color(0xc9a876)}, color2:{value:dimMode ? new THREE.Color(0xaa6644) : new THREE.Color(0xe8c896)} },
+      vertexShader: planetVert, fragmentShader: ringFrag,
+      transparent:true, side:THREE.DoubleSide, depthWrite:false
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2.3;
+    group.add(ring);
+
+    const ring2Geo = new THREE.RingGeometry(size * 1.15, size * 1.28, PERF.ringDetail, 4);
+    const ring2Mat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0}, color1:{value:dimMode ? new THREE.Color(0xaa5533) : new THREE.Color(0xaa9977)}, color2:{value:dimMode ? new THREE.Color(0xcc7755) : new THREE.Color(0xccbbaa)} },
+      vertexShader: planetVert, fragmentShader: ringFrag,
+      transparent:true, side:THREE.DoubleSide, depthWrite:false
+    });
+    const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+    ring2.rotation.x = Math.PI / 2.3;
+    group.add(ring2);
+
+    group.userData.materials = [mat, atmMat, ringMat, ring2Mat];
+    group.userData.size = size;
+    group.userData.type = 'ringed';
+  }
+  else if(type === 'moon1' || type === 'moon2' || type === 'moon3'){
+    const size = 8 + Math.random() * 6;
+    const colors = dimMode
+      ? [new THREE.Color(0x551111), new THREE.Color(0x220505), new THREE.Color(0x772222)]
+      : [new THREE.Color(0x999999), new THREE.Color(0x555555), new THREE.Color(0xbbbbbb)];
+    
+    const geo = new THREE.SphereGeometry(size, 48, 48);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0}, color1:{value:colors[0]}, color2:{value:colors[1]}, color3:{value:colors[2]} },
+      vertexShader: planetVert, fragmentShader: rockyPlanetFrag
+    });
+    group.add(new THREE.Mesh(geo, mat));
+    group.userData.materials = [mat];
+    group.userData.size = size;
+    group.userData.type = 'moon';
+    group.userData.isMoon = true;
+    group.userData.orbitRadius = 160 + Math.random() * 80;
+    group.userData.orbitSpeed = 0.08 + Math.random() * 0.08;
+    group.userData.orbitPhase = Math.random() * Math.PI * 2;
+  }
+  else if(type === 'sun' || type === 'dimSun'){
+    const size = type === 'sun' ? 150 : 120; // ENORMOUS SUN
+    const geo = new THREE.SphereGeometry(size, detail, detail);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0} },
+      vertexShader: planetVert, fragmentShader: sunFrag
+    });
+    group.add(new THREE.Mesh(geo, mat));
+
+    const glowColors = dimMode ? [0xff2200, 0xff4400, 0xff6600, 0xff8800] : [0xffaa44, 0xffcc66, 0xffdd88, 0xffeeaa];
+    for(let i=1; i<=4; i++){
+      const glowGeo = new THREE.SphereGeometry(size * (1 + i * 0.12), 32, 32);
+      const glowMat = new THREE.ShaderMaterial({
+        uniforms: { glowColor:{value:new THREE.Color(glowColors[i-1])}, intensity:{value:0.8/i}, power:{value:2.0+i*0.5} },
+        vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+        transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+      });
+      group.add(new THREE.Mesh(glowGeo, glowMat));
+    }
+    const coronaGeo = new THREE.SphereGeometry(size * 1.8, 32, 32);
+    const coronaMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:new THREE.Color(dimMode ? 0xff4400 : 0xffcc88)}, intensity:{value:0.3}, power:{value:6.0} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(coronaGeo, coronaMat));
+    const light = new THREE.PointLight(dimMode ? 0xff4422 : 0xffcc88, 4, 2000);
+    group.add(light);
+    group.userData.materials = [mat];
+    group.userData.size = size;
+    group.userData.type = 'sun';
+  }
+  else if(type === 'blackHole'){
+    const size = 80;
+    const geo = new THREE.SphereGeometry(size, detail, detail);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0} },
+      vertexShader: planetVert, fragmentShader: blackHoleFrag,
+      transparent:true, side:THREE.DoubleSide, depthWrite:false
+    });
+    group.add(new THREE.Mesh(geo, mat));
+    const ehGeo = new THREE.SphereGeometry(size * 1.15, 48, 48);
+    const ehMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:new THREE.Color(0x8844ff)}, intensity:{value:1.5}, power:{value:3.0} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(ehGeo, ehMat));
+    const outerGeo = new THREE.SphereGeometry(size * 1.5, 32, 32);
+    const outerMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:new THREE.Color(0x4422aa)}, intensity:{value:0.6}, power:{value:4.5} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(outerGeo, outerMat));
+    const light = new THREE.PointLight(0x6633ff, 3, 800);
+    group.add(light);
+    group.userData.materials = [mat, ehMat, outerMat];
+    group.userData.size = size;
+    group.userData.type = 'blackHole';
+  }
+  else if(type === 'nebula'){
+    const size = 400; // GIANT NEBULA
+    const count = PERF.nebulaParticles;
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const baseColors = dimMode 
+      ? [new THREE.Color(0xff3322), new THREE.Color(0xff6644), new THREE.Color(0xaa2211)]
+      : [new THREE.Color(0x6644aa), new THREE.Color(0x8866cc), new THREE.Color(0x4422aa), new THREE.Color(0xaa44cc)];
+    
+    for(let i=0; i<count; i++){
+      const angle = Math.random() * Math.PI * 2;
+      const radius = Math.pow(Math.random(), 0.5) * size;
+      const height = (Math.random() - 0.5) * size * 0.4;
+      const i3 = i*3;
+      pos[i3] = Math.cos(angle) * radius;
+      pos[i3+1] = height;
+      pos[i3+2] = Math.sin(angle) * radius;
+      const c = baseColors[Math.floor(Math.random() * baseColors.length)].clone();
+      c.offsetHSL((Math.random()-0.5) * 0.1, 0, (Math.random()-0.5) * 0.3);
+      colors[i3] = c.r; colors[i3+1] = c.g; colors[i3+2] = c.b;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const mat = new THREE.PointsMaterial({
+      size: 6, vertexColors:true, transparent:true, opacity:0.4,
+      blending:THREE.AdditiveBlending, depthWrite:false, sizeAttenuation:true
+    });
+    group.add(new THREE.Points(geo, mat));
+    const coreGeo = new THREE.SphereGeometry(size * 0.3, 24, 24);
+    const coreMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:new THREE.Color(dimMode ? 0xff4422 : 0x8866cc)}, intensity:{value:0.4}, power:{value:2.5} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(coreGeo, coreMat));
+    group.userData.materials = [mat, coreMat];
+    group.userData.size = size;
+    group.userData.type = 'nebula';
+  }
+  else if(type === 'dimPlanet'){
+    const size = 130;
+    const colors = [new THREE.Color(0xaa2222), new THREE.Color(0x441111), new THREE.Color(0xff4444), new THREE.Color(0xff8844)];
+    const geo = new THREE.SphereGeometry(size, detail, detail);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0}, color1:{value:colors[0]}, color2:{value:colors[1]}, color3:{value:colors[2]}, color4:{value:colors[3]}, stormIntensity:{value:1.5} },
+      vertexShader: planetVert, fragmentShader: gasPlanetFrag
+    });
+    group.add(new THREE.Mesh(geo, mat));
+    const atmGeo = new THREE.SphereGeometry(size * 1.08, 48, 48);
+    const atmMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:new THREE.Color(0xff2200)}, intensity:{value:1.5}, power:{value:3.0} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(atmGeo, atmMat));
+    const hazeGeo = new THREE.SphereGeometry(size * 1.2, 32, 32);
+    const hazeMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:new THREE.Color(0xff4400)}, intensity:{value:0.6}, power:{value:4.5} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(hazeGeo, hazeMat));
+    group.userData.materials = [mat, atmMat, hazeMat];
+    group.userData.size = size;
+    group.userData.type = 'dimPlanet';
+  }
+  else if(type === 'dimRinged'){
+    const size = 95;
+    const colors = [new THREE.Color(0x882211), new THREE.Color(0x441108), new THREE.Color(0xaa3322), new THREE.Color(0xff5533)];
+    const geo = new THREE.SphereGeometry(size, detail, detail);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0}, color1:{value:colors[0]}, color2:{value:colors[1]}, color3:{value:colors[2]}, color4:{value:colors[3]}, stormIntensity:{value:1.2} },
+      vertexShader: planetVert, fragmentShader: gasPlanetFrag
+    });
+    group.add(new THREE.Mesh(geo, mat));
+    const atmGeo = new THREE.SphereGeometry(size * 1.06, 48, 48);
+    const atmMat = new THREE.ShaderMaterial({
+      uniforms: { glowColor:{value:new THREE.Color(0xff3322)}, intensity:{value:1.2}, power:{value:3.5} },
+      vertexShader: atmosphereVert, fragmentShader: atmosphereFrag,
+      transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending
+    });
+    group.add(new THREE.Mesh(atmGeo, atmMat));
+    const ringGeo = new THREE.RingGeometry(size * 1.3, size * 2.3, PERF.ringDetail, 8);
+    const ringMat = new THREE.ShaderMaterial({
+      uniforms: { time:{value:0}, color1:{value:new THREE.Color(0x882211)}, color2:{value:new THREE.Color(0xcc4422)} },
+      vertexShader: planetVert, fragmentShader: ringFrag,
+      transparent:true, side:THREE.DoubleSide, depthWrite:false
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2.2;
+    group.add(ring);
+    group.userData.materials = [mat, atmMat, ringMat];
+    group.userData.size = size;
+    group.userData.type = 'dimRinged';
+  }
+  else if(type === 'asteroidField'){
+    const count = isLowEnd ? 80 : 200;
+    const fieldSize = 200;
+    const asteroidGroup = new THREE.Group();
+    for(let i=0; i<count; i++){
+      const size = 1 + Math.random() * 5;
+      const geo = new THREE.IcosahedronGeometry(size, 0);
+      const pos = geo.attributes.position;
+      for(let j=0; j<pos.count; j++){
+        const v = new THREE.Vector3(pos.getX(j), pos.getY(j), pos.getZ(j));
+        const n = v.clone().normalize();
+        v.copy(n.multiplyScalar(size * (0.7 + Math.random() * 0.6)));
+        pos.setXYZ(j, v.x, v.y, v.z);
+      }
+      geo.computeVertexNormals();
+      const mat = new THREE.MeshStandardMaterial({
+        color: dimMode ? 0x662222 : 0x666666,
+        roughness: 0.9, metalness: 0.2, flatShading: true,
+        emissive: dimMode ? 0x220000 : 0x000000,
+        emissiveIntensity: dimMode ? 0.3 : 0
+      });
+      const asteroid = new THREE.Mesh(geo, mat);
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 40 + Math.random() * fieldSize;
+      asteroid.position.set(Math.cos(angle) * radius, (Math.random() - 0.5) * 80, Math.sin(angle) * radius);
+      asteroid.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+      asteroid.userData.rotSpeed = new THREE.Vector3((Math.random()-0.5)*0.01,(Math.random()-0.5)*0.01,(Math.random()-0.5)*0.01);
+      asteroidGroup.add(asteroid);
+    }
+    group.add(asteroidGroup);
+    group.userData.materials = [];
+    group.userData.asteroids = asteroidGroup;
+    group.userData.size = fieldSize;
+    group.userData.type = 'asteroidField';
+  }
+
+  return group;
+}
+
+function spawnPlanetsForLevel(levelIdx){
+  for(const p of planets){ scene.remove(p); }
+  planets.length = 0;
+
+  const level = LEVELS[levelIdx];
+  if(!level.planets || level.planets.length === 0) return;
+
+  const dimMode = level.dim;
+
+  // Strategic layout — planets close enough to see clearly
+  const layouts = {
+    'gasGiant': { x: -180, y: -40, z: -250, scale: 1.0 },
+    'gasGiant2': { x: 220, y: 30, z: -300, scale: 1.0 },
+    'rocky1': { x: -120, y: 20, z: -150, scale: 1.0 },
+    'rocky2': { x: 140, y: -25, z: -180, scale: 1.0 },
+    'rocky3': { x: -160, y: 40, z: -200, scale: 1.0 },
+    'ringed': { x: 50, y: 0, z: -280, scale: 1.0 },
+    'sun': { x: 300, y: 80, z: -500, scale: 1.0 },
+    'dimSun': { x: 300, y: 80, z: -500, scale: 1.0 },
+    'blackHole': { x: 0, y: 0, z: -350, scale: 1.0 },
+    'nebula': { x: 0, y: 0, z: -400, scale: 1.0 },
+    'moon1': { x: -200, y: -50, z: -280, scale: 1.0, isMoon: true },
+    'moon2': { x: -120, y: 40, z: -220, scale: 1.0, isMoon: true },
+    'moon3': { x: 240, y: 50, z: -280, scale: 1.0, isMoon: true },
+    'dimPlanet': { x: -100, y: 0, z: -300, scale: 1.0 },
+    'dimRinged': { x: 200, y: 30, z: -350, scale: 1.0 },
+    'asteroidField': { x: 0, y: 0, z: -250, scale: 1.0 },
+  };
+
+  for(let i=0; i<level.planets.length; i++){
+    const type = level.planets[i];
+    const planet = createPlanet(type, dimMode);
+    const layout = layouts[type] || { x: (Math.random()-0.5)*300, y: (Math.random()-0.5)*100, z: -300 - Math.random()*100, scale: 1.0 };
+    
+    planet.position.set(
+      ship.position.x + layout.x + (Math.random()-0.5)*40,
+      layout.y + (Math.random()-0.5)*20,
+      ship.position.z + layout.z - Math.random()*50
+    );
+    planet.scale.setScalar(layout.scale);
+    planet.userData.rotSpeed = (Math.random() - 0.5) * 0.001;
+    planet.userData.relX = layout.x;
+    planet.userData.relY = layout.y;
+    planet.userData.relZ = layout.z;
+    
+    scene.add(planet);
+    planets.push(planet);
+  }
+}
 
 // ================================================================
 // SHIP BUILDER
 // ================================================================
 function buildShipModel(shipData){
   const group = new THREE.Group();
-  const bodyMat = new THREE.MeshStandardMaterial({color:shipData.color, roughness:0.3, metalness:0.85, flatShading:true, envMapIntensity:1.2});
+  const bodyMat = new THREE.MeshStandardMaterial({color:shipData.color, roughness:0.3, metalness:0.85, flatShading:true});
   const darkMat = new THREE.MeshStandardMaterial({color:shipData.accent, roughness:0.5, metalness:0.7, flatShading:true});
   const glowMat = new THREE.MeshBasicMaterial({color:0xffffff});
   const engineMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.9});
   const canopyMat = new THREE.MeshPhysicalMaterial({color:0x111111, roughness:0.05, metalness:0.95, clearcoat:1, clearcoatRoughness:0.05, transparent:true, opacity:0.85});
 
-  // Fuselage
   const profile = [
     {z:-3.0, rt:0.00, rb:0.00, wt:0.00, wb:0.00},
     {z:-2.5, rt:0.15, rb:0.20, wt:0.20, wb:0.30},
@@ -513,25 +1260,22 @@ function buildShipModel(shipData){
   const bc = verts.length/3;
   verts.push(0,0,profile[slices-1].z);
   for(let j=0;j<sides;j++) idx.push(bc, bs+((j+1)%sides), bs+j);
-
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
   geo.setIndex(idx);
   geo.computeVertexNormals();
   group.add(new THREE.Mesh(geo, bodyMat));
 
-  // Canopy
-  const canopy = new THREE.Mesh(new THREE.SphereGeometry(0.5, 20, 12, 0, Math.PI*2, 0, Math.PI/2), canopyMat);
+  const canopy = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 10, 0, Math.PI*2, 0, Math.PI/2), canopyMat);
   canopy.scale.set(0.55, 0.45, 1.1);
   canopy.position.set(0, 0.55, -0.8);
   group.add(canopy);
 
-  // Wings
   for(const side of [-1, 1]){
     const shape = new THREE.Shape();
     shape.moveTo(0, 0); shape.lineTo(0, 1.8);
     shape.lineTo(2.2, 1.2); shape.lineTo(2.2, 0.3); shape.closePath();
-    const wg = new THREE.ExtrudeGeometry(shape, {depth:0.08, bevelEnabled:true, bevelThickness:0.02, bevelSize:0.02, bevelSegments:1});
+    const wg = new THREE.ExtrudeGeometry(shape, {depth:0.08, bevelEnabled:false});
     wg.rotateX(-Math.PI/2);
     const wing = new THREE.Mesh(wg, bodyMat);
     wing.position.set(0, -0.15, 0.5);
@@ -541,7 +1285,6 @@ function buildShipModel(shipData){
     group.add(g);
   }
 
-  // V-stabs
   for(const side of [-1, 1]){
     const shape = new THREE.Shape();
     shape.moveTo(0, 0); shape.lineTo(-0.1, 0.9);
@@ -554,45 +1297,34 @@ function buildShipModel(shipData){
     group.add(vs);
   }
 
-  // Cannons
   for(const x of [-1.5, 1.5]){
-    const cannon = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.6, 8), darkMat);
+    const cannon = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.6, 6), darkMat);
     cannon.rotation.x = Math.PI/2;
     cannon.position.set(x, -0.1, -1.2);
     group.add(cannon);
-    const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), new THREE.MeshBasicMaterial({color:0x111111}));
+    const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.09, 6, 4), new THREE.MeshBasicMaterial({color:0x111111}));
     muzzle.position.set(x, -0.1, -1.5);
     muzzle.name = x < 0 ? 'muzzleL' : 'muzzleR';
     group.add(muzzle);
   }
 
-  // Engines
   for(const x of [-0.3, 0.3]){
-    const eng = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), engineMat);
+    const eng = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 6), engineMat);
     eng.position.set(x, -0.05, 3.1);
     eng.name = x < 0 ? 'engineL' : 'engineR';
     group.add(eng);
-    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.6, 8), darkMat);
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.6, 6), darkMat);
     cone.rotation.x = -Math.PI/2;
     cone.position.set(x, -0.05, 3.3);
     group.add(cone);
   }
 
-  // Lights
   for(const x of [-2.1, 2.1]){
-    const l = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), glowMat);
+    const l = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 4), glowMat);
     l.position.set(x, -0.1, 1.5);
     group.add(l);
   }
 
-  // Panel lines (decorative strips)
-  for(const z of [-1.5, 0, 1.5]){
-    const strip = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.02, 0.04), darkMat);
-    strip.position.set(0, 0.6, z);
-    group.add(strip);
-  }
-
-  group.userData.materials = {bodyMat, darkMat, glowMat, engineMat};
   return group;
 }
 
@@ -605,15 +1337,15 @@ scene.add(ship);
 const meteors = [];
 const meteorPool = [];
 const METEOR_COLORS = [0x666666, 0x555555, 0x444444, 0x777777, 0x333333];
+const METEOR_COLORS_DIM = [0x882222, 0x661111, 0xaa3333, 0x441111, 0x993333];
 
 function createMeteorGeometry(size){
-  const geo = new THREE.IcosahedronGeometry(size, 1);
+  const geo = new THREE.IcosahedronGeometry(size, PERF.meteorDetail);
   const pos = geo.attributes.position;
   for(let i=0;i<pos.count;i++){
     const v = new THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i));
     const n = v.clone().normalize();
-    const noise = 0.7 + Math.random()*0.6;
-    v.copy(n.multiplyScalar(size * noise));
+    v.copy(n.multiplyScalar(size * (0.7 + Math.random()*0.6)));
     pos.setXYZ(i, v.x, v.y, v.z);
   }
   geo.computeVertexNormals();
@@ -628,9 +1360,12 @@ function spawnMeteor(){
   } else {
     const size = 0.8 + Math.random()*2.2;
     const geo = createMeteorGeometry(size);
+    const colors = state.dimMode ? METEOR_COLORS_DIM : METEOR_COLORS;
     const mat = new THREE.MeshStandardMaterial({
-      color: METEOR_COLORS[Math.floor(Math.random()*METEOR_COLORS.length)],
-      roughness: 0.9, metalness: 0.3, flatShading: true
+      color: colors[Math.floor(Math.random()*colors.length)],
+      roughness: 0.9, metalness: 0.3, flatShading: true,
+      emissive: state.dimMode ? 0x330000 : 0x000000,
+      emissiveIntensity: state.dimMode ? 0.5 : 0
     });
     meteor = new THREE.Mesh(geo, mat);
     meteor.userData.size = size;
@@ -639,7 +1374,7 @@ function spawnMeteor(){
   const spread = 25;
   meteor.position.set((Math.random()-0.5)*spread*2, (Math.random()-0.5)*spread*1.2, spawnZ);
   meteor.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
-  meteor.userData.rotSpeed = new THREE.Vector3((Math.random()-0.5)*0.02, (Math.random()-0.5)*0.02, (Math.random()-0.5)*0.02);
+  meteor.userData.rotSpeed = new THREE.Vector3((Math.random()-0.5)*0.02,(Math.random()-0.5)*0.02,(Math.random()-0.5)*0.02);
   meteors.push(meteor);
 }
 
@@ -651,9 +1386,11 @@ const enemyPool = [];
 
 function buildEnemyShip(){
   const group = new THREE.Group();
-  const bodyMat = new THREE.MeshStandardMaterial({color:0x222222, roughness:0.4, metalness:0.8, flatShading:true, emissive:0x111111, emissiveIntensity:0.5});
+  const bodyColor = state.dimMode ? 0x881111 : 0x222222;
+  const emissiveColor = state.dimMode ? 0x440000 : 0x111111;
+  const bodyMat = new THREE.MeshStandardMaterial({color:bodyColor, roughness:0.4, metalness:0.8, flatShading:true, emissive:emissiveColor, emissiveIntensity:0.5});
   const darkMat = new THREE.MeshStandardMaterial({color:0x000000, roughness:0.5, metalness:0.7, flatShading:true});
-  const glowMat = new THREE.MeshBasicMaterial({color:0xffffff});
+  const glowMat = new THREE.MeshBasicMaterial({color:state.dimMode ? 0xff3333 : 0xffffff});
 
   const profile = [
     {z:-2.0, rt:0.00, rb:0.00, wt:0.00, wb:0.00},
@@ -663,10 +1400,8 @@ function buildEnemyShip(){
     {z: 1.5, rt:0.40, rb:0.45, wt:0.60, wb:0.65},
     {z: 2.0, rt:0.25, rb:0.30, wt:0.40, wb:0.45},
   ];
-  const slices = profile.length;
-  const sides = 6;
-  const verts = [];
-  const idx = [];
+  const slices = profile.length, sides = 6;
+  const verts = [], idx = [];
   function crossSection(p){
     const w = p.wt*0.9, wb = p.wb;
     const h = p.rt, hb = p.rb;
@@ -693,7 +1428,6 @@ function buildEnemyShip(){
   const bc = verts.length/3;
   verts.push(0,0,profile[slices-1].z);
   for(let j=0;j<sides;j++) idx.push(bc, bs+((j+1)%sides), bs+j);
-
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
   geo.setIndex(idx);
@@ -711,18 +1445,15 @@ function buildEnemyShip(){
     if(side === -1) wing.scale.x = -1;
     group.add(wing);
   }
-
-  const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 8, 0, Math.PI*2, 0, Math.PI/2), glowMat);
+  const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 6, 0, Math.PI*2, 0, Math.PI/2), glowMat);
   cockpit.scale.set(0.6, 0.4, 1.0);
   cockpit.position.set(0, 0.4, -0.5);
   group.add(cockpit);
-
-  const eng = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 6), new THREE.MeshBasicMaterial({color:0xffffff}));
+  const eng = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 6), new THREE.MeshBasicMaterial({color:state.dimMode ? 0xff3322 : 0xffffff}));
   eng.position.set(0, 0, 2.1);
   eng.name = 'enemyEngine';
   group.add(eng);
-
-  group.userData.hp = 2;
+  group.userData.hp = state.dimMode ? 3 : 2;
   group.userData.size = 1.5;
   return group;
 }
@@ -731,7 +1462,7 @@ function spawnEnemy(){
   let enemy;
   if(enemyPool.length > 0){
     enemy = enemyPool.pop();
-    enemy.userData.hp = 2;
+    enemy.userData.hp = state.dimMode ? 3 : 2;
     scene.add(enemy);
   } else {
     enemy = buildEnemyShip();
@@ -754,19 +1485,21 @@ const bullets = [];
 const bulletPool = [];
 const bulletMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.95});
 const enemyBulletMat = new THREE.MeshBasicMaterial({color:0x888888, transparent:true, opacity:0.95});
+const bulletMatDim = new THREE.MeshBasicMaterial({color:0xff6644, transparent:true, opacity:0.95});
+const enemyBulletMatDim = new THREE.MeshBasicMaterial({color:0xff2222, transparent:true, opacity:0.95});
 
 function spawnBullet(fromX, fromY, fromZ, dirX, dirY, dirZ, isEnemy=false){
+  if(bullets.length >= PERF.maxBullets) return;
   let b;
+  const myMat = state.dimMode ? (isEnemy ? enemyBulletMatDim : bulletMatDim) : (isEnemy ? enemyBulletMat : bulletMat);
   if(bulletPool.length > 0){
     b = bulletPool.pop();
-    b.material = isEnemy ? enemyBulletMat : bulletMat;
+    b.material = myMat;
     scene.add(b);
   } else {
-    const geo = new THREE.CylinderGeometry(0.08, 0.08, 1.2, 6);
+    const geo = new THREE.CylinderGeometry(0.08, 0.08, 1.2, 4);
     geo.rotateX(Math.PI/2);
-    b = new THREE.Mesh(geo, isEnemy ? enemyBulletMat : bulletMat);
-    const halo = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), new THREE.MeshBasicMaterial({color:isEnemy?0x666666:0xffffff, transparent:true, opacity:0.4}));
-    b.add(halo);
+    b = new THREE.Mesh(geo, myMat);
   }
   b.position.set(fromX, fromY, fromZ);
   b.userData.vel = new THREE.Vector3(dirX, dirY, dirZ);
@@ -780,25 +1513,28 @@ function spawnBullet(fromX, fromY, fromZ, dirX, dirY, dirZ, isEnemy=false){
 // ================================================================
 const trailParticles = [];
 function spawnTrail(){
+  const trailColor = state.dimMode ? 0xff4422 : 0xffffff;
   for(const x of [-0.3, 0.3]){
-    const p = new THREE.Mesh(new THREE.SphereGeometry(0.08+Math.random()*0.05, 6, 4), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.8}));
-    p.position.set(ship.position.x + x + (Math.random()-0.5)*0.1, ship.position.y - 0.05 + (Math.random()-0.5)*0.1, ship.position.z + 3.3);
-    p.userData.life = 0.4;
-    p.userData.maxLife = 0.4;
-    p.userData.vy = (Math.random()-0.5)*0.02;
+    const p = new THREE.Mesh(new THREE.SphereGeometry(0.08, 4, 3), new THREE.MeshBasicMaterial({color:trailColor, transparent:true, opacity:0.8}));
+    p.position.set(ship.position.x + x, ship.position.y - 0.05, ship.position.z + 3.3);
+    p.userData.life = 0.3;
+    p.userData.maxLife = 0.3;
     scene.add(p);
     trailParticles.push(p);
   }
 }
 
 const explosionParticles = [];
-function spawnExplosion(pos, count=30){
+function spawnExplosion(pos, count=PERF.maxExplosionParts){
+  count = Math.min(count, PERF.maxExplosionParts);
+  const c1 = state.dimMode ? 0xff3322 : 0xffffff;
+  const c2 = state.dimMode ? 0xff8844 : 0xaaaaaa;
   for(let i=0;i<count;i++){
-    const p = new THREE.Mesh(new THREE.SphereGeometry(0.1+Math.random()*0.15, 6, 4), new THREE.MeshBasicMaterial({color:Math.random()>0.5?0xffffff:0xaaaaaa, transparent:true, opacity:1}));
+    const p = new THREE.Mesh(new THREE.SphereGeometry(0.12, 4, 3), new THREE.MeshBasicMaterial({color:Math.random()>0.5?c1:c2, transparent:true, opacity:1}));
     p.position.copy(pos);
     const dir = new THREE.Vector3((Math.random()-0.5)*2, (Math.random()-0.5)*2, (Math.random()-0.5)*2).normalize().multiplyScalar(0.3+Math.random()*0.4);
     p.userData.vel = dir;
-    p.userData.life = 0.8+Math.random()*0.4;
+    p.userData.life = 0.6+Math.random()*0.3;
     p.userData.maxLife = p.userData.life;
     scene.add(p);
     explosionParticles.push(p);
@@ -816,38 +1552,25 @@ const DIFFICULTY = {
 };
 
 const state = {
-  playing: false,
-  score: 0,
-  distance: 0,
-  speed: 20,
-  baseSpeed: 20,
-  maxSpeed: 80,
-  hull: 100,
-  maxHull: 100,
-  meteorsDodged: 0,
-  kills: 0,
-  boost: false,
-  boostEnergy: 100,
-  invuln: 0,
-  weaponCooldown: 0,
-  ammo: 10,
-  maxAmmo: 10,
-  reloading: false,
-  reloadTime: 0,
-  currentTarget: null,
+  playing: false, score: 0, distance: 0, speed: 20, baseSpeed: 20, maxSpeed: 80,
+  hull: 100, maxHull: 100, meteorsDodged: 0, kills: 0, boost: false, boostEnergy: 100,
+  invuln: 0, weaponCooldown: 0, ammo: 10, maxAmmo: 10, reloading: false, reloadTime: 0,
+  currentTarget: null, boostCount: 0, dimMode: false, dimTriggered: false,
+  currentLevel: 0, boostAccumulator: 0,
 };
 
 const input = {left:false, right:false, up:false, down:false, boost:false, fire:false, reload:false};
 const targetShipPos = {x:0, y:0};
 const SHIP_BOUNDS = {x: 10, y: 6};
 
-// UI elements
+// UI
 const elScore = document.getElementById('score');
 const elDistance = document.getElementById('distance');
 const elKills = document.getElementById('kills');
 const elCoins = document.getElementById('coins');
 const elHull = document.getElementById('hull');
 const elAmmo = document.getElementById('ammo');
+const elBoostCount = document.getElementById('boostCount');
 const elSpeedFill = document.getElementById('speedFill');
 const elHullFill = document.getElementById('hullFill');
 const elWeaponFill = document.getElementById('weaponFill');
@@ -855,8 +1578,14 @@ const elBoostFill = document.getElementById('boostFill');
 const elFlash = document.getElementById('flash');
 const elDmgVig = document.getElementById('dmgVig');
 const elWarning = document.getElementById('warning');
+const elDimWarning = document.getElementById('dimWarning');
+const elLevelAnnounce = document.getElementById('levelAnnounce');
+const elLevelAnnounceBig = document.getElementById('levelAnnounceBig');
+const elLevelAnnounceSmall = document.getElementById('levelAnnounceSmall');
 const elCrosshair = document.getElementById('crosshair');
 const elReloadInd = document.getElementById('reloadInd');
+const elLvlName = document.getElementById('lvlName');
+const elLvlNum = document.getElementById('lvlNum');
 const menuOverlay = document.getElementById('menuOverlay');
 const shopOverlay = document.getElementById('shopOverlay');
 const settingsOverlay = document.getElementById('settingsOverlay');
@@ -866,6 +1595,7 @@ const bestScoreEl = document.getElementById('bestScore');
 const finalStatsEl = document.getElementById('finalStats');
 const menuCoinsEl = document.getElementById('menuCoins');
 const shopCoinsEl = document.getElementById('shopCoins');
+const rotateOverlay = document.getElementById('rotateOverlay');
 
 function updateUI(){
   elScore.textContent = Math.floor(state.score).toLocaleString();
@@ -873,6 +1603,21 @@ function updateUI(){
   elKills.textContent = state.kills;
   elCoins.textContent = save.coins;
   elHull.textContent = Math.max(0, Math.floor(state.hull)) + '%';
+  
+  if(state.dimMode){
+    elBoostCount.textContent = 'DIMENSION X';
+    elBoostCount.classList.add('dim-warn');
+  } else {
+    const boostRemaining = Math.max(0, 1000 - state.boostCount);
+    if(boostRemaining <= 100 && boostRemaining > 0){
+      elBoostCount.textContent = state.boostCount + ' / 1000';
+      elBoostCount.classList.add('dim-warn');
+    } else {
+      elBoostCount.textContent = state.boostCount + ' / 1000';
+      elBoostCount.classList.remove('dim-warn');
+    }
+  }
+  
   if(state.reloading){
     elAmmo.textContent = 'RELOAD';
     elWeaponFill.style.width = ((state.reloadTime / getShip().reloadTime) * 100) + '%';
@@ -888,6 +1633,7 @@ function updateUI(){
   const pct = Math.min(100, ((state.speed - state.baseSpeed) / (state.maxSpeed - state.baseSpeed)) * 100 + 20);
   elSpeedFill.style.width = pct + '%';
   elBoostFill.style.width = state.boostEnergy + '%';
+  elBoostFill.classList.toggle('dim', state.dimMode);
 }
 
 function flashDamage(){
@@ -908,6 +1654,22 @@ function showWarning(text){
   setTimeout(()=>elWarning.classList.remove('on'), 1500);
 }
 
+function showDimWarning(){
+  elDimWarning.classList.add('on');
+  elFlash.classList.add('dim');
+  setTimeout(()=>elFlash.classList.remove('dim'), 100);
+  setTimeout(()=>elDimWarning.classList.remove('on'), 2500);
+}
+
+function showLevelAnnounce(name, sector){
+  elLevelAnnounceBig.textContent = name;
+  elLevelAnnounceSmall.textContent = 'SECTOR ' + sector;
+  elLevelAnnounce.classList.remove('on');
+  void elLevelAnnounce.offsetWidth; // force reflow
+  elLevelAnnounce.classList.add('on');
+  setTimeout(()=>elLevelAnnounce.classList.remove('on'), 3000);
+}
+
 function startReload(){
   if(state.reloading || state.ammo === state.maxAmmo) return;
   state.reloading = true;
@@ -917,24 +1679,17 @@ function startReload(){
 
 function playerShoot(){
   if(state.weaponCooldown > 0 || state.reloading) return;
-  if(state.ammo <= 0){
-    startReload();
-    return;
-  }
+  if(state.ammo <= 0){ startReload(); return; }
   const shipData = getShip();
   state.weaponCooldown = shipData.fireRate;
   state.ammo--;
 
-  // Auto-aim: find nearest enemy
   let target = null;
   let minDist = Infinity;
   for(const e of enemies){
     if(!e.userData.alive) continue;
     const d = e.position.distanceTo(ship.position);
-    if(d < 80 && d < minDist){
-      minDist = d;
-      target = e;
-    }
+    if(d < 80 && d < minDist){ minDist = d; target = e; }
   }
   state.currentTarget = target;
 
@@ -945,20 +1700,71 @@ function playerShoot(){
     let dirX = 0, dirY = 0, dirZ = -1;
     if(target){
       const toTarget = new THREE.Vector3().subVectors(target.position, worldPos).normalize();
-      dirX = toTarget.x;
-      dirY = toTarget.y;
-      dirZ = toTarget.z;
+      dirX = toTarget.x; dirY = toTarget.y; dirZ = toTarget.z;
     }
     spawnBullet(worldPos.x, worldPos.y, worldPos.z, dirX, dirY, dirZ, false);
   }
 
   const mL = ship.getObjectByName('muzzleL');
   const mR = ship.getObjectByName('muzzleR');
-  if(mL) { mL.material.color.setHex(0xffffff); setTimeout(()=>mL.material.color.setHex(0x111111), 60); }
-  if(mR) { mR.material.color.setHex(0xffffff); setTimeout(()=>mR.material.color.setHex(0x111111), 60); }
+  const muzzleColor = state.dimMode ? 0xff6644 : 0xffffff;
+  const muzzleOff = state.dimMode ? 0x441111 : 0x111111;
+  if(mL) { mL.material.color.setHex(muzzleColor); setTimeout(()=>mL.material.color.setHex(muzzleOff), 60); }
+  if(mR) { mR.material.color.setHex(muzzleColor); setTimeout(()=>mR.material.color.setHex(muzzleOff), 60); }
   flashShoot();
 
   if(state.ammo <= 0) startReload();
+}
+
+function checkLevel(){
+  let newLevel = 0;
+  if(state.dimMode){
+    newLevel = LEVELS.length - 1;
+  } else {
+    for(let i=LEVELS.length-1; i>=0; i--){
+      if(LEVELS[i].distance !== Infinity && state.distance >= LEVELS[i].distance){
+        newLevel = i;
+        break;
+      }
+    }
+  }
+  if(newLevel !== state.currentLevel){
+    state.currentLevel = newLevel;
+    const level = LEVELS[newLevel];
+    elLvlName.textContent = level.name;
+    elLvlNum.textContent = 'SECTOR ' + level.sector;
+    
+    // Smooth transition of background and fog
+    scene.background = new THREE.Color(level.bg);
+    scene.fog.color.setHex(level.fog);
+    
+    spawnPlanetsForLevel(newLevel);
+    showLevelAnnounce(level.name, level.sector);
+  }
+}
+
+function triggerDimensionShift(){
+  if(state.dimTriggered) return;
+  state.dimTriggered = true;
+  state.dimMode = true;
+  
+  showDimWarning();
+  document.body.classList.add('dim-mode');
+  
+  stars1.material.color.setHex(0xff4422);
+  stars2.material.color.setHex(0xff2200);
+  stars3.material.color.setHex(0xff6644);
+  
+  key.color.setHex(0xff6644);
+  rim.color.setHex(0xff3322);
+  
+  state.currentLevel = LEVELS.length - 1;
+  const level = LEVELS[LEVELS.length - 1];
+  elLvlName.textContent = level.name;
+  elLvlNum.textContent = 'SECTOR ' + level.sector;
+  scene.background = new THREE.Color(level.bg);
+  scene.fog.color.copy(level.bg);
+  spawnPlanetsForLevel(LEVELS.length - 1);
 }
 
 function startGame(){
@@ -978,9 +1784,28 @@ function startGame(){
   state.reloading = false;
   state.reloadTime = 0;
   state.currentTarget = null;
+  state.boostCount = 0;
+  state.dimMode = false;
+  state.dimTriggered = false;
+  state.currentLevel = 0;
+  state.boostAccumulator = 0;
+  
   ship.position.set(0, 0, 0);
   ship.rotation.set(0, 0, 0);
   targetShipPos.x = 0; targetShipPos.y = 0;
+  
+  document.body.classList.remove('dim-mode');
+  stars1.material.color.setHex(0xffffff);
+  stars2.material.color.setHex(0xcccccc);
+  stars3.material.color.setHex(0x8888ff);
+  key.color.setHex(0xffffff);
+  rim.color.setHex(0xaaaaaa);
+  scene.background = new THREE.Color(0x000000);
+  scene.fog.color.setHex(0x000000);
+  
+  elLvlName.textContent = LEVELS[0].name;
+  elLvlNum.textContent = 'SECTOR ' + LEVELS[0].sector;
+  
   for(const m of meteors){ scene.remove(m); meteorPool.push(m); }
   meteors.length = 0;
   for(const e of enemies){ scene.remove(e); enemyPool.push(e); }
@@ -991,23 +1816,33 @@ function startGame(){
   trailParticles.length = 0;
   for(const p of explosionParticles) scene.remove(p);
   explosionParticles.length = 0;
+  for(const p of planets){ scene.remove(p); }
+  planets.length = 0;
+  
   menuOverlay.classList.add('hidden');
   gameOverOverlay.classList.add('hidden');
   settingsOverlay.classList.add('hidden');
   shopOverlay.classList.add('hidden');
   elReloadInd.classList.remove('on');
   document.getElementById('shipName').textContent = shipData.name;
+  checkOrientation();
 }
 
 function endGame(){
   state.playing = false;
   const finalScore = Math.floor(state.score);
   if(finalScore > save.best) save.best = finalScore;
+  const earned = state.kills * 20 + Math.floor(state.distance/10);
+  save.coins += earned;
   saveData();
   finalScoreEl.textContent = finalScore.toLocaleString();
   bestScoreEl.textContent = 'Recorde: ' + save.best.toLocaleString();
-  finalStatsEl.textContent = `Você percorreu ${Math.floor(state.distance).toLocaleString()} km, destruiu ${state.kills} naves e ganhou ${state.kills * 20 + Math.floor(state.distance/10)} créditos.`;
+  let stats = `Você percorreu ${Math.floor(state.distance).toLocaleString()} km, destruiu ${state.kills} naves e ganhou ${earned} créditos.`;
+  if(state.dimMode) stats += ' Você alcançou a DIMENSÃO X!';
+  else stats += ` Boosts: ${state.boostCount}/1000.`;
+  finalStatsEl.textContent = stats;
   gameOverOverlay.classList.remove('hidden');
+  rotateOverlay.classList.remove('game-active');
 }
 
 // ================================================================
@@ -1035,7 +1870,6 @@ function renderShop(){
       ${owned && !equipped ? `<div class="owned">OWNED</div>` : ''}
       ${equipped ? `<div class="equipped">EQUIPPED</div>` : ''}
     `;
-    // Draw mini ship preview
     const cvs = card.querySelector('canvas');
     const ctx = cvs.getContext('2d');
     ctx.fillStyle = '#000';
@@ -1044,20 +1878,11 @@ function renderShop(){
     ctx.fillStyle = ctx.strokeStyle;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(60, 10);
-    ctx.lineTo(80, 30);
-    ctx.lineTo(110, 35);
-    ctx.lineTo(110, 40);
-    ctx.lineTo(80, 38);
-    ctx.lineTo(70, 50);
-    ctx.lineTo(50, 50);
-    ctx.lineTo(40, 38);
-    ctx.lineTo(10, 40);
-    ctx.lineTo(10, 35);
-    ctx.lineTo(40, 30);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    ctx.moveTo(60, 10); ctx.lineTo(80, 30); ctx.lineTo(110, 35);
+    ctx.lineTo(110, 40); ctx.lineTo(80, 38); ctx.lineTo(70, 50);
+    ctx.lineTo(50, 50); ctx.lineTo(40, 38); ctx.lineTo(10, 40);
+    ctx.lineTo(10, 35); ctx.lineTo(40, 30); ctx.closePath();
+    ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.ellipse(60, 28, 8, 4, 0, 0, Math.PI*2);
@@ -1070,14 +1895,10 @@ function renderShop(){
           save.ownedShips.push(s.id);
           save.currentShip = s.id;
           saveData();
-          // Rebuild ship
           scene.remove(ship);
           ship = buildShipModel(getShip());
           scene.add(ship);
           renderShop();
-        } else {
-          card.style.animation = 'none';
-          setTimeout(()=>card.style.animation = '', 10);
         }
       } else {
         save.currentShip = s.id;
@@ -1101,6 +1922,7 @@ document.getElementById('btnMenu').addEventListener('click', ()=>{
   gameOverOverlay.classList.add('hidden');
   menuOverlay.classList.remove('hidden');
   menuCoinsEl.textContent = save.coins;
+  rotateOverlay.classList.remove('game-active');
 });
 document.getElementById('btnShop').addEventListener('click', ()=>{
   menuOverlay.classList.add('hidden');
@@ -1146,14 +1968,13 @@ document.getElementById('fovSlider').addEventListener('input', updateSettingsLab
 function applySettings(){
   camera.fov = save.settings.fov;
   camera.updateProjectionMatrix();
-  renderer.setPixelRatio(save.settings.quality === 'low' ? 1 : Math.min(devicePixelRatio, 2));
+  const pr = save.settings.quality === 'low' ? 1 : (save.settings.quality === 'medium' ? Math.min(devicePixelRatio, 1.5) : Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(pr);
   renderer.setSize(innerWidth, innerHeight);
 }
 applySettings();
 
-// ================================================================
 // INPUT (PC)
-// ================================================================
 addEventListener('keydown', e=>{
   if(e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') input.left = true;
   if(e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') input.right = true;
@@ -1175,25 +1996,23 @@ addEventListener('keyup', e=>{
 addEventListener('mousedown', e=>{ if(state.playing) input.fire = true; });
 addEventListener('mouseup', e=>{ input.fire = false; });
 
-// ================================================================
-// MOBILE DETECTION + CONTROLS
-// ================================================================
-const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (innerWidth < 900);
+// MOBILE CONTROLS
 if(isMobile){
   document.getElementById('mobileControls').classList.add('active');
-  document.querySelector('.hint').style.display = 'none';
 }
 
-// Joystick
 const joystick = document.getElementById('joystick');
 const stick = document.getElementById('stick');
 let joystickActive = false;
+let joystickId = null;
 let joystickCenter = {x:0, y:0};
 let joystickDelta = {x:0, y:0};
 
 function handleJoystickStart(e){
   e.preventDefault();
+  const touch = e.changedTouches ? e.changedTouches[0] : e;
   joystickActive = true;
+  joystickId = e.changedTouches ? touch.identifier : null;
   const rect = joystick.getBoundingClientRect();
   joystickCenter.x = rect.left + rect.width/2;
   joystickCenter.y = rect.top + rect.height/2;
@@ -1202,7 +2021,13 @@ function handleJoystickStart(e){
 function handleJoystickMove(e){
   if(!joystickActive) return;
   e.preventDefault();
-  const touch = e.touches ? e.touches[0] : e;
+  let touch;
+  if(e.changedTouches){
+    for(const t of e.changedTouches){
+      if(t.identifier === joystickId){ touch = t; break; }
+    }
+    if(!touch) return;
+  } else { touch = e; }
   const dx = touch.clientX - joystickCenter.x;
   const dy = touch.clientY - joystickCenter.y;
   const max = 50;
@@ -1216,26 +2041,44 @@ function handleJoystickMove(e){
 }
 function handleJoystickEnd(e){
   e.preventDefault();
+  if(e.changedTouches){
+    let found = false;
+    for(const t of e.changedTouches){
+      if(t.identifier === joystickId){ found = true; break; }
+    }
+    if(!found) return;
+  }
   joystickActive = false;
+  joystickId = null;
   stick.style.transform = 'translate(-50%, -50%)';
   joystickDelta.x = 0;
   joystickDelta.y = 0;
 }
 
-joystick.addEventListener('touchstart', handleJoystickStart);
-joystick.addEventListener('touchmove', handleJoystickMove);
-joystick.addEventListener('touchend', handleJoystickEnd);
-joystick.addEventListener('touchcancel', handleJoystickEnd);
+joystick.addEventListener('touchstart', handleJoystickStart, {passive:false});
+joystick.addEventListener('touchmove', handleJoystickMove, {passive:false});
+joystick.addEventListener('touchend', handleJoystickEnd, {passive:false});
+joystick.addEventListener('touchcancel', handleJoystickEnd, {passive:false});
 
 function setupMobileBtn(id, onDown, onUp){
   const btn = document.getElementById(id);
-  btn.addEventListener('touchstart', e=>{e.preventDefault(); btn.classList.add('pressed'); onDown();});
-  btn.addEventListener('touchend', e=>{e.preventDefault(); btn.classList.remove('pressed'); onUp();});
+  btn.addEventListener('touchstart', e=>{e.preventDefault(); btn.classList.add('pressed'); onDown();}, {passive:false});
+  btn.addEventListener('touchend', e=>{e.preventDefault(); btn.classList.remove('pressed'); onUp();}, {passive:false});
   btn.addEventListener('touchcancel', e=>{btn.classList.remove('pressed'); onUp();});
 }
 setupMobileBtn('mFire', ()=>input.fire=true, ()=>input.fire=false);
 setupMobileBtn('mBoost', ()=>input.boost=true, ()=>input.boost=false);
 setupMobileBtn('mReload', ()=>{input.reload=true; setTimeout(()=>input.reload=false, 100);}, ()=>{});
+
+function checkOrientation(){
+  if(isMobile && state.playing && isPortrait()){
+    rotateOverlay.classList.add('game-active');
+  } else {
+    rotateOverlay.classList.remove('game-active');
+  }
+}
+addEventListener('resize', checkOrientation);
+addEventListener('orientationchange', ()=>setTimeout(checkOrientation, 200));
 
 // ================================================================
 // MAIN LOOP
@@ -1244,8 +2087,15 @@ const clock = new THREE.Clock();
 let meteorTimer = 0;
 let enemyTimer = 0;
 let trailTimer = 0;
+let lastFrameTime = 0;
+const MIN_FRAME_TIME = 1000/60;
 
-function tick(){
+function tick(now){
+  requestAnimationFrame(tick);
+  
+  if(now - lastFrameTime < MIN_FRAME_TIME * 0.9) return;
+  lastFrameTime = now;
+  
   const dt = Math.min(clock.getDelta(), 0.05);
   const t = clock.getElapsedTime();
   const diff = DIFFICULTY[save.settings.difficulty];
@@ -1257,7 +2107,17 @@ function tick(){
     if(input.boost && state.boostEnergy > 0){
       state.boost = true;
       state.boostEnergy = Math.max(0, state.boostEnergy - dt * 30);
-      state.speed = Math.min(state.maxSpeed * 1.3, state.speed * 1.5);
+      state.speed = Math.min(state.maxSpeed * (state.dimMode ? 1.6 : 1.3), state.speed * (state.dimMode ? 1.8 : 1.5));
+      
+      state.boostAccumulator += dt;
+      if(state.boostAccumulator >= 0.1){
+        state.boostCount++;
+        state.boostAccumulator = 0;
+        
+        if(state.boostCount >= 1000 && !state.dimTriggered){
+          triggerDimensionShift();
+        }
+      }
     } else {
       state.boost = false;
       state.boostEnergy = Math.min(100, state.boostEnergy + dt * 15);
@@ -1266,16 +2126,16 @@ function tick(){
     const moveZ = state.speed * dt * shipData.speed;
     ship.position.z -= moveZ;
     state.distance += moveZ * 0.1;
-    state.score += moveZ * 2;
+    state.score += moveZ * 2 * (state.dimMode ? 2 : 1);
 
-    // Steering
+    checkLevel();
+
     const steerSpeed = 15 * save.settings.sensitivity;
     let steerX = 0, steerY = 0;
     if(input.left) steerX -= 1;
     if(input.right) steerX += 1;
     if(input.up) steerY += 1;
     if(input.down) steerY -= 1;
-    // Mobile joystick
     if(isMobile){
       steerX += joystickDelta.x;
       steerY -= joystickDelta.y;
@@ -1287,26 +2147,20 @@ function tick(){
     targetShipPos.x = Math.max(-SHIP_BOUNDS.x, Math.min(SHIP_BOUNDS.x, targetShipPos.x));
     targetShipPos.y = Math.max(-SHIP_BOUNDS.y, Math.min(SHIP_BOUNDS.y, targetShipPos.y));
 
-    // Smooth physics-like movement
     ship.position.x += (targetShipPos.x - ship.position.x) * Math.min(1, dt * 6);
     ship.position.y += (targetShipPos.y - ship.position.y) * Math.min(1, dt * 6);
 
-    // Banking / roll physics
     const targetRoll = -steerX * 0.5 - (targetShipPos.x - ship.position.x) * 0.3;
     ship.rotation.z += (targetRoll - ship.rotation.z) * Math.min(1, dt * 4);
     const targetPitch = steerY * 0.2 + (targetShipPos.y - ship.position.y) * 0.15;
     ship.rotation.x += (targetPitch - ship.rotation.x) * Math.min(1, dt * 4);
-    // Yaw when turning
     const targetYaw = -steerX * 0.15;
     ship.rotation.y += (targetYaw - ship.rotation.y) * Math.min(1, dt * 3);
 
     if(state.invuln > 0) state.invuln -= dt;
     if(state.weaponCooldown > 0) state.weaponCooldown -= dt;
 
-    // Reload
-    if(input.reload && !state.reloading && state.ammo < state.maxAmmo){
-      startReload();
-    }
+    if(input.reload && !state.reloading && state.ammo < state.maxAmmo){ startReload(); }
     if(state.reloading){
       state.reloadTime += dt;
       if(state.reloadTime >= shipData.reloadTime){
@@ -1319,26 +2173,24 @@ function tick(){
 
     if(input.fire) playerShoot();
 
-    // Spawn meteors
     meteorTimer -= dt;
-    const spawnRate = Math.max(0.08, diff.meteorRate - state.distance * 0.0005);
+    const spawnRate = Math.max(0.08, diff.meteorRate - state.distance * 0.0005) * (state.dimMode ? 0.7 : 1);
     if(meteorTimer <= 0){
       spawnMeteor();
       meteorTimer = spawnRate;
-      if(Math.random() < 0.3) spawnMeteor();
+      if(Math.random() < (state.dimMode ? 0.5 : 0.3)) spawnMeteor();
     }
 
-    // Spawn enemies
     enemyTimer -= dt;
     if(enemyTimer <= 0){
-      if(Math.random() < diff.enemyRate * 20){
+      const enemyChance = diff.enemyRate * 20 * (state.dimMode ? 1.5 : 1);
+      if(Math.random() < enemyChance){
         spawnEnemy();
-        if(enemies.length === 1) showWarning('⚠ HOSTILES ⚠');
+        if(enemies.length === 1) showWarning(state.dimMode ? '⚠ DIMENSIONAL HOSTILES ⚠' : '⚠ HOSTILES ⚠');
       }
       enemyTimer = 1.5;
     }
 
-    // Update meteors
     for(let i=meteors.length-1; i>=0; i--){
       const m = meteors[i];
       m.rotation.x += m.userData.rotSpeed.x;
@@ -1369,14 +2221,13 @@ function tick(){
           meteorPool.push(m);
           meteors.splice(i, 1);
           if(state.hull <= 0){
-            spawnExplosion(ship.position.clone(), 50);
+            spawnExplosion(ship.position.clone(), 30);
             endGame();
           }
         }
       }
     }
 
-    // Update enemies
     for(let i=enemies.length-1; i>=0; i--){
       const e = enemies[i];
       if(!e.userData.alive) continue;
@@ -1384,19 +2235,18 @@ function tick(){
       const distToPlayer = toPlayer.length();
       const targetRotY = Math.atan2(toPlayer.x, toPlayer.z);
       e.rotation.y += (targetRotY - e.rotation.y) * Math.min(1, dt * 2);
-      const enemySpeed = 15 * diff.enemySpeed;
+      const enemySpeed = 15 * diff.enemySpeed * (state.dimMode ? 1.3 : 1);
       e.position.z += Math.cos(e.rotation.y) * enemySpeed * dt * 0.3;
       e.position.x += Math.sin(e.rotation.y) * enemySpeed * dt * 0.3;
       e.position.x += e.userData.vx * dt;
       e.position.y += e.userData.vy * dt;
-      // Banking
       e.rotation.z = Math.sin(t*2 + i) * 0.2;
       const eng = e.getObjectByName('enemyEngine');
       if(eng) eng.scale.setScalar(0.8 + Math.sin(t*20 + i)*0.3);
 
       e.userData.shootCooldown -= dt;
       if(e.userData.shootCooldown <= 0 && distToPlayer < 60 && distToPlayer > 5){
-        if(Math.random() < diff.enemyShoot * 10){
+        if(Math.random() < diff.enemyShoot * 10 * (state.dimMode ? 1.5 : 1)){
           const dir = toPlayer.clone().normalize();
           spawnBullet(e.position.x, e.position.y, e.position.z - 1, dir.x, dir.y, dir.z, true);
           e.userData.shootCooldown = 1.5 + Math.random() * 2;
@@ -1416,19 +2266,18 @@ function tick(){
         state.hull -= 35 * diff.dmgMult;
         state.invuln = 1.5;
         flashDamage();
-        spawnExplosion(e.position.clone(), 40);
+        spawnExplosion(e.position.clone(), 30);
         e.userData.alive = false;
         scene.remove(e);
         enemyPool.push(e);
         enemies.splice(i, 1);
         if(state.hull <= 0){
-          spawnExplosion(ship.position.clone(), 50);
+          spawnExplosion(ship.position.clone(), 30);
           endGame();
         }
       }
     }
 
-    // Update bullets
     for(let i=bullets.length-1; i>=0; i--){
       const b = bullets[i];
       b.position.addScaledVector(b.userData.vel, 120 * dt);
@@ -1446,16 +2295,15 @@ function tick(){
           const d = b.position.distanceTo(e.position);
           if(d < e.userData.size){
             e.userData.hp -= shipData.damage;
-            spawnExplosion(b.position.clone(), 8);
+            spawnExplosion(b.position.clone(), 6);
             scene.remove(b);
             bulletPool.push(b);
             bullets.splice(i, 1);
             if(e.userData.hp <= 0){
-              spawnExplosion(e.position.clone(), 40);
+              spawnExplosion(e.position.clone(), 25);
               state.kills++;
-              state.score += 100;
-              const reward = 20;
-              save.coins += reward;
+              state.score += 100 * (state.dimMode ? 2 : 1);
+              save.coins += state.dimMode ? 40 : 20;
               e.userData.alive = false;
               scene.remove(e);
               enemyPool.push(e);
@@ -1471,14 +2319,55 @@ function tick(){
             state.hull -= 15 * diff.dmgMult;
             state.invuln = 0.8;
             flashDamage();
-            spawnExplosion(b.position.clone(), 10);
+            spawnExplosion(b.position.clone(), 8);
             scene.remove(b);
             bulletPool.push(b);
             bullets.splice(i, 1);
             if(state.hull <= 0){
-              spawnExplosion(ship.position.clone(), 50);
+              spawnExplosion(ship.position.clone(), 30);
               endGame();
             }
+          }
+        }
+      }
+    }
+
+    // Update planets — CRUCIAL: keep them positioned relative to ship
+    for(const p of planets){
+      p.rotation.y += p.userData.rotSpeed;
+      
+      // Keep planets at relative position to ship
+      if(p.userData.relX !== undefined){
+        p.position.x = ship.position.x + p.userData.relX;
+        p.position.y = p.userData.relY;
+        p.position.z = ship.position.z + p.userData.relZ;
+      }
+      
+      // Moons orbit
+      if(p.userData.isMoon){
+        const moonAngle = p.userData.orbitPhase + t * p.userData.orbitSpeed;
+        const parent = planets.find(pl => pl.userData.type === 'gasGiant' || pl.userData.type === 'gasGiant2');
+        if(parent){
+          p.position.x = parent.position.x + Math.cos(moonAngle) * p.userData.orbitRadius;
+          p.position.y = parent.position.y + Math.sin(moonAngle * 0.5) * 20;
+          p.position.z = parent.position.z + Math.sin(moonAngle) * p.userData.orbitRadius;
+        }
+      }
+      
+      // Rotate asteroids
+      if(p.userData.asteroids){
+        for(const asteroid of p.userData.asteroids.children){
+          asteroid.rotation.x += asteroid.userData.rotSpeed.x;
+          asteroid.rotation.y += asteroid.userData.rotSpeed.y;
+          asteroid.rotation.z += asteroid.userData.rotSpeed.z;
+        }
+      }
+      
+      // Update shader time
+      if(p.userData.materials){
+        for(const m of p.userData.materials){
+          if(m.uniforms && m.uniforms.time){
+            m.uniforms.time.value = t;
           }
         }
       }
@@ -1487,7 +2376,7 @@ function tick(){
     trailTimer -= dt;
     if(trailTimer <= 0){
       spawnTrail();
-      trailTimer = 0.03;
+      trailTimer = PERF.trailRate;
     }
 
     ship.visible = state.invuln <= 0 || Math.floor(t * 15) % 2 === 0;
@@ -1498,18 +2387,21 @@ function tick(){
       const pulse = 0.8 + Math.sin(t*30)*0.2 + (state.boost ? 0.4 : 0);
       engL.scale.setScalar(pulse);
       engR.scale.setScalar(pulse);
+      if(state.dimMode){
+        engL.material.color.setHex(0xff4422);
+        engR.material.color.setHex(0xff4422);
+      } else {
+        engL.material.color.setHex(0xffffff);
+        engR.material.color.setHex(0xffffff);
+      }
     }
 
-    // Auto-aim crosshair
     let target = null;
     let minDist = Infinity;
     for(const e of enemies){
       if(!e.userData.alive) continue;
       const d = e.position.distanceTo(ship.position);
-      if(d < 80 && d < minDist){
-        minDist = d;
-        target = e;
-      }
+      if(d < 80 && d < minDist){ minDist = d; target = e; }
     }
     if(target){
       const screenPos = target.position.clone().project(camera);
@@ -1536,7 +2428,6 @@ function tick(){
     const alpha = p.userData.life / p.userData.maxLife;
     p.material.opacity = alpha * 0.8;
     p.scale.setScalar(alpha);
-    p.position.y += p.userData.vy;
     p.position.z += 0.05;
   }
 
@@ -1571,17 +2462,24 @@ function tick(){
 
   updateUI();
   renderer.render(scene, camera);
-  requestAnimationFrame(tick);
 }
 
 menuCoinsEl.textContent = save.coins;
-tick();
+requestAnimationFrame(tick);
 
 addEventListener('resize', ()=>{
   camera.aspect = innerWidth/innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth,innerHeight);
+  checkOrientation();
 });
+
+document.addEventListener('gesturestart', e=>e.preventDefault());
+document.addEventListener('gesturechange', e=>e.preventDefault());
+document.addEventListener('gestureend', e=>e.preventDefault());
+document.addEventListener('dblclick', e=>e.preventDefault());
+
+checkOrientation();
 </script>
 </body>
 </html>
